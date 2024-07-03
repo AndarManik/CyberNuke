@@ -1,0 +1,165 @@
+:root {
+  --text: #ede7e9;
+  --background: hsl(250, 14%, 10%);
+  --primary: #c7b5b9;
+  --terrain: hsla(250, 14%, 10%, 0.25);
+  --ground: hsl(250, 10%, 85%);
+  --basicattack: hsl(0, 29%, 53%);
+}
+
+* {
+  font-family: "Kode Mono", monospace;
+  font-weight: 700;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#gameWindow {
+  margin: 0;
+  padding: 0;
+  width: 700px;
+  height: 700px;
+  background-color: var(--ground);
+  border-radius: 350px;
+  position: relative;
+}
+
+#borderBlocker {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 700px;
+  height: 700px;
+  background-color: #00000000;
+  border-radius: 7500px;
+  border: var(--background) 5000px solid;
+  z-index: 1000;
+}
+
+#gameHud {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 10;
+}
+
+#healthHud {
+  position: absolute;
+  margin-top: 560px;
+  width: 185px;
+  height: 30px;
+  border: #100c0d 2px solid;
+  border-radius: 5px;
+  display: flex;
+}
+
+#currentHealthHud {
+  height: 100%;
+  width: 100%;
+  background-color: rgba(92, 126, 51, 0.744);
+  border-radius: 3px;
+}
+
+#currentShieldHud {
+  height: 100%;
+  width: 1%;
+  background-color: hsla(200, 42%, 35%, 0.693);
+
+  border-radius: 3px;
+}
+
+#abilities {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+.ability {
+  margin-top: 460px;
+  height: 40px;
+  width: 40px;
+  background-color: #100c0d88;
+  border: #100c0d88 2px solid;
+  border-radius: 5px;
+  will-change: width, height, margin, border-radius;
+}
+#player {
+  height: 20px;
+  width: 20px;
+  background-color: var(--background);
+  transform: translate(340px, 340px);
+  border-radius: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.healthBar {
+  top: -20px;
+  left: -15px;
+  position: absolute;
+  width: 46px;
+  height: 6px;
+  border: #100c0d88 2px solid;
+  border-radius: 2px;
+  z-index: unset;
+  display: flex;
+}
+
+.currentHealth {
+  height: 100%;
+  width: 100%;
+  background-color: rgba(92, 126, 51, 0.693);
+}
+
+.currentShield {
+  height: 100%;
+  width: 1px;
+  background-color: hsla(200, 42%, 35%, 0.693);
+}
+
+.otherPlayer {
+  height: 20px;
+  width: 20px;
+  background-color: var(--background);
+  border-radius: 15px;
+  position: absolute;
+  z-index: 1;
+}
+
+.terrain1 {
+  height: 5px;
+  width: 5px;
+  border-radius: 5px;
+  background-color: hsla(250, 14%, 10%, 0.25);
+}
+
+.terrain2 {
+  height: 3px;
+  width: 3px;
+  border-radius: 3px;
+  background-color: hsla(250, 14%, 10%, 0.125);
+}
+
+.basicattack {
+  height: 10px;
+  width: 10px;
+  background-color: var(--basicattack);
+  border-radius: 15px;
+  position: absolute;
+}

@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&family=Kode+Mono:wght@400..700&display=swap");
+    </style>
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="gameWindow">
+      <div id="background"></div>
+
+      <div id="player">
+        <div class="healthBar">
+          <div id="health" class="currentHealth"></div>
+          <div id="shield" class="currentShield"></div>
+        </div>
+      </div>
+    </div>
+    <div id="gameHud">
+      <div id="abilities">
+        <div class="ability"></div>
+        <div class="ability"></div>
+        <div class="ability"></div>
+      </div>
+
+      <div id="healthHud">
+        <div id="currentHealthHud"></div>
+        <div id="currentShieldHud"></div>
+      </div>
+
+      <div id="borderBlocker"></div>
+    </div>
+  </body>
+  <script type="module" src="client.js"></script>
+</html>

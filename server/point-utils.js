@@ -57,14 +57,14 @@ class PointUtils {
     return o1 != o2 && o3 != o4;
   }
 
-  // Given three collinear points p, q, r, the  checks if
+  // Given three collinear points point, q, r, the  checks if
   // point q lies on line segment 'pr'
-  isCollinearPointOnSegment(p, q, r) {
+  isCollinearPointOnSegment(point, q, r) {
     if (
-      q[0] <= Math.max(p[0], r[0]) &&
-      q[0] >= Math.min(p[0], r[0]) &&
-      q[1] <= Math.max(p[1], r[1]) &&
-      q[1] >= Math.min(p[1], r[1])
+      q[0] <= Math.max(point[0], r[0]) &&
+      q[0] >= Math.min(point[0], r[0]) &&
+      q[1] <= Math.max(point[1], r[1]) &&
+      q[1] >= Math.min(point[1], r[1])
     )
       return true;
 
@@ -77,13 +77,14 @@ class PointUtils {
     return this.isCollinearPointOnSegment(segmentStart, point, segmentEnd);
   }
 
-  // To find orientation of ordered triplet (p, q, r).
+  // To find orientation of ordered triplet (point, q, r).
   // The  returns following values
-  // 0 --> p, q and r are collinear
+  // 0 --> point, q and r are collinear
   // 1 --> Clockwise
   // 2 --> Counterclockwise
-  orentationOfPoints(p, q, r) {
-    let val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
+  orentationOfPoints(point, q, r) {
+    let val =
+      (q[1] - point[1]) * (r[0] - q[0]) - (q[0] - point[0]) * (r[1] - q[1]);
 
     if (val == 0) return 0; // collinear
 
@@ -179,27 +180,28 @@ class PointUtils {
   isSegmentinPolygon(segmentStart, segmentEnd, polygon) {
     //check if the line intersects with any of the segments of the polygon, except for when the intersection point is segmentStart or segmentEnd
 
-    polygon.forEach((node, index) => {
+    for (let index = 0; index < polygon.length; index++) {
       if (
         !this.isPointOnSegment(
-          node,
+          polygon[index],
           segmentStart,
           polygon[(index + 1) % polygon.length]
         ) &&
         !this.isPointOnSegment(
-          node,
+          polygon[index],
           segmentEnd,
           polygon[(index + 1) % polygon.length]
         ) &&
         this.checkClosedIntersection(
           segmentStart,
           segmentEnd,
-          node,
+          polygon[index],
           polygon[(index + 1) % polygon.length]
         )
-      )
+      ) {
         return true;
-    });
+      }
+    }
 
     //if there are no intersections check the mid point with a horizontal line and count how line intersect on the left. Odd means inside and even means outside.
 
@@ -208,12 +210,13 @@ class PointUtils {
       (segmentStart[1] + segmentEnd[1]) / 2,
     ];
 
-    return this.isPointinPolygon(midPoint, polygon);
+    return this.isPointinOpenPolygon(midPoint, polygon);
   }
 
-  isPointinPolygon(point, polygon) {
+  isPointinOpenPolygon(point, polygon) {
     const pointAtInfinityTotheLeft = [Number.MIN_SAFE_INTEGER, point[1]];
     let intersectCount = 0;
+    let onSegment = false;
     polygon.forEach((node, index) => {
       if (
         this.checkClosedIntersection(
@@ -228,9 +231,23 @@ class PointUtils {
           intersectCount--;
         }
       }
+
+      if (
+        this.isPointOnSegment(
+          node,
+          point,
+          polygon[(index + 1) % polygon.length]
+        )
+      ) {
+        onSegment = true;
+      }
     });
 
-    return intersectCount % 2 == 1; //returns true if intersect count = odd
+    if (onSegment) {
+      return false;
+    } else {
+      return intersectCount % 2 == 1;
+    }
   }
 
   getBidrectionalGraphfromPolygon(polygon) {
@@ -284,6 +301,44 @@ class PointUtils {
     });
 
     return [pathNodes, pathEdges];
+  }
+
+  sqr(x) {
+    return x * x;
+  }
+  distanceSquared(point1, point2) {
+    return this.sqr(point1[0] - point2[0]) + this.sqr(point1[1] - point2[1]);
+  }
+  distToSegmentSquared(point, segmentStart, segmentEnd) {
+    var l2 = this.distanceSquared(segmentStart, segmentEnd);
+    if (l2 == 0) return this.distanceSquared(point, segmentStart);
+    var t =
+      ((point[0] - segmentStart[0]) * (segmentEnd[0] - segmentStart[0]) +
+        (point[1] - segmentStart[1]) * (segmentEnd[1] - segmentStart[1])) /
+      l2;
+    t = Math.max(0, Math.min(1, t));
+    return this.distanceSquared(point, {
+      x: segmentStart[0] + t * (segmentEnd[0] - segmentStart[0]),
+      y: segmentStart[1] + t * (segmentEnd[1] - segmentStart[1]),
+    });
+  }
+  distToSegment(point, segmentStart, segmentEnd) {
+    return Math.sqrt(
+      this.distToSegmentSquared(point, segmentStart, segmentEnd)
+    );
+  }
+  projectPointOntoSegment(point, segmentStart, segmentEnd) {
+    const apx = point[0] - segmentStart[0];
+    const apy = point[1] - segmentStart[1];
+    const abx = segmentEnd[0] - segmentStart[0];
+    const aby = segmentEnd[1] - segmentStart[1];
+    const abMag = abx * abx + aby * aby;
+    const dotProduct = apx * abx + apy * aby;
+    const ratio = abMag === 0 ? 0 : dotProduct / abMag;
+
+    if (ratio < 0) return [segmentStart[0], segmentStart[1]];
+    else if (ratio > 1) return [segmentEnd[0], segmentEnd[1]];
+    else return [segmentStart[0] + ratio * abx, segmentStart[1] + ratio * aby];
   }
 }
 

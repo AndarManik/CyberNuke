@@ -157,7 +157,12 @@ test("isSegmentinPolygon fully inside", () => {
     pointUtils.isSegmentinPolygon(
       [0, 0],
       [1, 1],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(true);
 });
@@ -167,7 +172,12 @@ test("isSegmentinPolygon fully inside midpoint hits a vertex", () => {
     pointUtils.isSegmentinPolygon(
       [0, 0],
       [1, 0],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(true);
 });
@@ -176,8 +186,13 @@ test("isSegmentinPolygon inside segment is polygon points", () => {
   expect(
     pointUtils.isSegmentinPolygon(
       [5, 0],
-      [-6, 0],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [-20, 0],
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(true);
 });
@@ -187,7 +202,12 @@ test("isSegmentinPolygon inside segment is polygon points", () => {
     pointUtils.isSegmentinPolygon(
       [5, 0],
       [-4, 0],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(true);
 });
@@ -197,7 +217,12 @@ test("isSegmentinPolygon outside", () => {
     pointUtils.isSegmentinPolygon(
       [10, 0],
       [10, 5],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(false);
 });
@@ -207,7 +232,122 @@ test("isSegmentinPolygon outside touching", () => {
     pointUtils.isSegmentinPolygon(
       [5, 0],
       [10, 5],
-      [[0, 5], [5, 0], [0, -5], [-5, 0]]
+      [
+        [0, 5],
+        [5, 0],
+        [0, -5],
+        [-5, 0],
+      ]
     )
   ).toBe(false);
+});
+
+test("isSegmentinPolygon real data", () => {
+  expect(
+    pointUtils.isSegmentinPolygon(
+      [215, 162.5],
+      [115, 187.5],
+      [
+        [215, 162.5],
+        [225, 152.5],
+        [275, 152.5],
+        [285, 162.5],
+        [285, 212.5],
+        [275, 222.5],
+        [225, 222.5],
+        [215, 212.5],
+      ]
+    )
+  ).toBe(false);
+});
+
+test("isSegmentinPolygon real data", () => {
+  expect(
+    pointUtils.isSegmentinPolygon(
+      [215, 162.5],
+      [115, 187.5],
+      [
+        [115, 187.5],
+        [125, 177.5],
+        [175, 177.5],
+        [185, 187.5],
+        [185, 237.5],
+        [175, 247.5],
+        [125, 247.5],
+        [115, 237.5],
+      ]
+    )
+  ).toBe(true);
+});
+
+test("checkOpenIntersection real data", () => {
+  expect(
+    pointUtils.checkOpenIntersection(
+      [215, 162.5],
+      [115, 187.5],
+      [125, 177.5],
+      [175, 177.5]
+    )
+  ).toBe(true);
+});
+
+test("isSegmentinPolygon real data", () => {
+  expect(
+    pointUtils.isSegmentinPolygon(
+      [150, 177.5],
+      [175, 177.5],
+      [
+        [115, 187.5],
+        [125, 177.5],
+        [175, 177.5],
+        [185, 187.5],
+        [185, 237.5],
+        [175, 247.5],
+        [125, 247.5],
+        [115, 237.5],
+      ]
+    )
+  ).toBe(false);
+});
+
+test("checkOpenIntersection real data ontop", () => {
+  expect(
+    pointUtils.checkOpenIntersection(
+      [150, 177.5],
+      [175, 177.5],
+      [125, 177.5],
+      [175, 177.5]
+    )
+  ).toBe(false);
+});
+
+test("checkOpenIntersection real data < shape", () => {
+  expect(
+    pointUtils.checkOpenIntersection(
+      [150, 177.5],
+      [175, 177.5],
+      [175, 177.5],
+      [185, 187.5]
+    )
+  ).toBe(false);
+});
+
+test("projectPointOntoSegment", () => {
+  expect(
+    pointUtils.projectPointOntoSegment(
+      [150, 0],
+      [100, 177.5],
+      [175, 177.5],
+    )
+  ).toStrictEqual([150,177.5]);
+});
+
+test("distToSegment", () => {
+  expect(
+    pointUtils.distToSegment(
+      [150, 0],
+      [100, 177.5],
+      [175, 177.5],
+    )
+  ).toStrictEqual(177.5);
 });

@@ -119,7 +119,7 @@ class Player {
           }
         });
       }
-      if(this.pathX.length == 0) {
+      if (this.pathX.length == 0) {
         this.isMoving = false;
         return;
       }
@@ -131,10 +131,7 @@ class Player {
       const moveDistanceY = (deltaY * this.movespeed) / mag;
 
       //if the desired position can be reached in one move
-      if (
-        Math.abs(deltaX) <= Math.abs(moveDistanceX) &&
-        Math.abs(deltaY) <= Math.abs(moveDistanceY)
-      ) {
+      if (mag <= this.movespeed) {
         this.playerX = this.pathX.shift();
         this.playerY = this.pathY.shift();
 

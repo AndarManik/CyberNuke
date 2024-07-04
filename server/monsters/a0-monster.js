@@ -46,69 +46,7 @@ class A0MonsterPitEntity {
     );
     this.pathNodes = graphData[0];
     this.pathEdges = graphData[1];
-    console.log(this.pathNodes,this.pathEdges);
-  }
-
-  buildPathingGraph(terrain) {
-    const [nodes1, edges1] = terrain[0].getGraph();
-    const [nodes2, edges2] = terrain[1].getGraph();
-
-    const edgesToAdd = new Array(16).fill().map(() => []);
-
-    nodes1.forEach((node1, indexn1) => {
-      nodes2.forEach((node2, indexn2) => {
-        let obstructed = false;
-
-        edges1.forEach((edge1, indexe1) => {
-          if (indexe1 % 2 == 0 && indexe1 != indexn1 && !obstructed) {
-            edge1.forEach((edgeNode) => {
-              if (edgeNode[0] != indexn1 && !obstructed) {
-                obstructed = pointUtils.checkIntersection(
-                  node1,
-                  node2,
-                  nodes1[indexe1],
-                  nodes1[edgeNode[0]]
-                );
-              }
-            });
-          }
-        });
-
-        edges2.forEach((edge2, indexe2) => {
-          if (indexe2 % 2 == 0 && indexe2 != indexn2 && !obstructed) {
-            edge2.forEach((edgeNode) => {
-              if (edgeNode[0] != indexn2 && !obstructed) {
-                obstructed = pointUtils.checkIntersection(
-                  node1,
-                  node2,
-                  nodes2[indexe2],
-                  nodes2[edgeNode[0]]
-                );
-              }
-            });
-          }
-        });
-
-        if (!obstructed) {
-          const distance = pointUtils.distance(node1, node2);
-          edgesToAdd[indexn1].push([indexn2 + 8, distance]);
-          edgesToAdd[indexn2 + 8].push([indexn1, distance]);
-        }
-      });
-    });
-
-    edges2.forEach((edge) => {
-      edge.forEach((node) => {
-        node[0] += 8;
-      });
-    });
-
-    this.pathNodes.push(...nodes1, ...nodes2);
-    this.pathEdges.push(...edges1, ...edges2);
-
-    this.pathEdges.forEach((edge, index) => {
-      edge.push(...edgesToAdd[index]);
-    });
+    console.log(this.pathNodes, this.pathEdges);
   }
 
   isPointInPit(startX, startY, endX, endY) {
@@ -131,25 +69,22 @@ class A0MonsterPitEntity {
     }
 
     const startEdges = [];
-
-    this.pathNodes.forEach((node, index) => {
-      if (
-        !this.terrainNodes.some((terrain) =>
-          pointUtils.isSegmentinPolygon([startX, startY], node, terrain)
-        )
-      ) {
-        const distance = pointUtils.distance([startX, startY], node);
-        startEdges.push([index, distance]);
-      }
-    });
-
     const endEdges = [];
 
     this.pathNodes.forEach((node, index) => {
       if (
         !this.terrainNodes.some((terrain) =>
+          pointUtils.isSegmentinPolygon([startX, startY], node, terrain)
+        ) || (startX == node[0] && startY == node[1])
+      ) {
+        const distance = pointUtils.distance([startX, startY], node);
+        startEdges.push([index, distance]);
+      }
+
+      if (
+        !this.terrainNodes.some((terrain) =>
           pointUtils.isSegmentinPolygon([endX, endY], node, terrain)
-        )
+        ) || (endX == node[0] && endY == node[1])
       ) {
         const distance = pointUtils.distance([endX, endY], node);
         endEdges.push([index, distance]);
@@ -160,11 +95,15 @@ class A0MonsterPitEntity {
     this.pathEdges.push(startEdges);
 
     endEdges.forEach((edge) => {
-      this.pathEdges[edge[0]].push([17, edge[1]]);
+      this.pathEdges[edge[0]].push([this.pathNodes.length - 1, edge[1]]);
     });
 
     const path = pointUtils.aStar(16, 17, this.pathNodes, this.pathEdges);
 
+    if(path == "No path found") {
+      console.log("No path found", startEdges, [startX, startY], this.terrainNodes.some(terrain => pointUtils.isPointinOpenPolygon([startX,startY], terrain)));
+
+    }
     path.shift();
     if (
       this.pathNodes[path[0]][0] == startX &&

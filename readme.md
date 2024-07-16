@@ -1,5 +1,5 @@
 # CyberNuke
-CyberNuke is a Nuke top down [Moba](https://en.wikipedia.org/wiki/Multiplayer_online_battle_arena) and [Battle Royal](https://en.wikipedia.org/wiki/Battle_royale_game) fusion.
+CyberNuke is a 2D top down [Moba](https://en.wikipedia.org/wiki/Multiplayer_online_battle_arena) and [Battle Royal](https://en.wikipedia.org/wiki/Battle_royale_game) fusion.
 
 Gameplay in CyberNuke consists of teams which fight against monster pits for the goal of acquiring stronger abilities. These monster pits come in several levels of strength forcing players to fight weaker monster pits so that they can become strong enough to challenge stronger monster pits. As the game progresses and teams begin to challege stronger and more rare monster pit, they will be forced into skirmishes between one another over control of the monster pit. The game ends with a team victorious if they are either the last team standing or the team which took down the final monster pit.
 

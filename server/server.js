@@ -1,53 +1,77 @@
-const express = require("express");
-const app = express();
 const path = require("path");
 const WebSocket = require("ws");
+const express = require("express");
+
+const { Player } = require("./serverplayer.js");
+const {
+  players,
+  entities,
+  playerGraveyard,
+  globalEntities,
+  incrementTick,
+} = require("./state.js");
+const { A0MonsterPitEntity } = require("./monsters/a0-monster-pit.js");
+
+const app = express();
 const server = require("http").createServer(app);
 const wss = new WebSocket.Server({ server });
-const { v4: uuidv4 } = require("uuid");
-
-const { players, entities } = require("./state.js");
-const { Player } = require("./serverplayer.js");
-
-const { A0MonsterPitEntity } = require("./monsters/a0-monster.js");
 
 //routing code
 app.use(express.static(path.join(__dirname, "../public")));
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "client.html"));
 });
-
 app.listen(3000, () => {
   console.log("Server running on port 3000 - http://localhost:3000/");
 });
 
 //build level
-
-new A0MonsterPitEntity(200, 200);
-
-//websocket code
+const width = 5;
+for (let x = -width; x <= width; x++) {
+  for (let y = -width; y <= width; y++) {
+    new A0MonsterPitEntity(x * 1000 - 200, y * 1000 - 200);
+    new A0MonsterPitEntity(x * 1000 + 200, y * 1000 - 200);
+    new A0MonsterPitEntity(x * 1000 - 200, y * 1000 + 200);
+    new A0MonsterPitEntity(x * 1000 + 200, y * 1000 + 200);
+  }
+}
 
 //client server interface
 wss.on("connection", function connection(ws) {
-  const userID = uuidv4();
-  const newPlayer = new Player(userID, ws);
-  players[userID] = newPlayer;
+  let player;
+  ws.send(
+    JSON.stringify({
+      type: "init user",
+    })
+  );
 
   ws.on("message", function incoming(event) {
     const message = JSON.parse(event);
     switch (message.type) {
+      case "new user":
+        player = new Player(ws);
+        ws.send(
+          JSON.stringify({
+            type: "new user",
+            userID: player.id,
+          })
+        );
+        break;
+      case "reconnecting user":
+        player = playerGraveyard[message.userId];
+        if (player) player.rejoin(ws);
+        // In the case where there is no player in the graveyard not setting the player will mean no messages from this websocket to the client, thus killing the client websocket.
+        break;
+
       case "tick":
-        newPlayer.setInput(message.input);
+        player.setInput(message.input);
         break;
     }
   });
 
   ws.on("close", function close() {
-    delete players[userID];
+    if (player) player.delete();
   });
-
-  ws.send(JSON.stringify({ type: "init user", userID }));
 });
 
 server.listen(3001, () => {
@@ -56,36 +80,32 @@ server.listen(3001, () => {
 
 async function gameloop() {
   while (true) {
-    const frametimer = new Promise((resolve) => setTimeout(resolve, 1000 / 60)); // Time for one tick at 60 ticks a seconds
+    const frametimer = new Promise((resolve) => setTimeout(resolve, 1000 / 60));
+    //console.time("========server tick========");
 
     const playerData = Object.entries(players).map((entry) =>
       entry[1].getState()
     );
 
-    const entityData = Object.entries(entities).map((entry) =>
+    const globalData = Object.entries(globalEntities).map((entry) =>
       entry[1].getState()
     );
 
-    const gameState = JSON.stringify({
-      type: "tick",
-      players: playerData,
-      entities: entityData,
-    });
-
-    //tick message to client
     Object.entries(players).forEach((entry) => {
-      entry[1].ws.send(gameState);
+      entry[1].sendPlayerTick(playerData, globalData);
     });
 
-    //server tick update code
+    
     Object.entries(players).forEach((entry) => {
       entry[1].update();
     });
-
+    
     Object.entries(entities).forEach((entry) => {
       entry[1].update();
     });
 
+    incrementTick();
+    //console.timeEnd("========server tick========");
     await frametimer;
   }
 }

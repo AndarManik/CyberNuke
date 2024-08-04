@@ -105,6 +105,37 @@ class PointUtils {
       (half_b <= 0 || c <= 0)
     );
   }
+  getIntersectionSegmentCircle(startPoint, endPoint, center, radius) {
+    const startToCenterX = startPoint[0] - center[0];
+    const startToCenterY = startPoint[1] - center[1];
+    const diffX = endPoint[0] - startPoint[0];
+    const diffY = endPoint[1] - startPoint[1];
+    const a = diffX * diffX + diffY * diffY;
+    const b = 2 * (startToCenterX * diffX + startToCenterY * diffY);
+    const c =
+      startToCenterX * startToCenterX +
+      startToCenterY * startToCenterY -
+      radius * radius;
+    const discrim = Math.sqrt(b * b - 4 * a * c);
+    const t1 = (-b - discrim) / 2 / a;
+    const t2 = (-b + discrim) / 2 / a;
+    const intersect1 = [
+      startPoint[0] + t1 * (endPoint[0] - startPoint[0]),
+      startPoint[1] + t1 * (endPoint[1] - startPoint[1]),
+    ];
+    const intersect2 = [
+      startPoint[0] + t2 * (endPoint[0] - startPoint[0]),
+      startPoint[1] + t2 * (endPoint[1] - startPoint[1]),
+    ];
+
+    return [intersect1, intersect2, t1];
+  }
+
+  isPointInCircle(point, center, radius) {
+    const xDiff = center[0] - point[0];
+    const yDiff = center[1] - point[1];
+    return xDiff * xDiff + yDiff * yDiff <= radius * radius;
+  }
 
   aStar(startNode, endNode, nodes, edges) {
     const costFromStart = {};
@@ -173,34 +204,38 @@ class PointUtils {
       currentNode = cameFrom.get(currentNode);
       totalPath.unshift(currentNode);
     }
-    console.log(totalPath);
     return totalPath;
   }
 
-  isSegmentinPolygon(segmentStart, segmentEnd, polygon) {
+  checkHalfOpenIntersection(openStart, openEnd, closedStart, closedEnd) {
+    return (
+      !this.isPointOnSegment(closedStart, openStart, closedEnd) &&
+      !this.isPointOnSegment(closedStart, openEnd, closedEnd) &&
+      this.checkClosedIntersection(openStart, openEnd, closedStart, closedEnd)
+    );
+  }
+
+  isSegmentinPolygon(segmentStart, segmentEnd, polygon, consoleFlag = false) {
     //check if the line intersects with any of the segments of the polygon, except for when the intersection point is segmentStart or segmentEnd
 
     for (let index = 0; index < polygon.length; index++) {
       if (
-        !this.isPointOnSegment(
-          polygon[index],
-          segmentStart,
-          polygon[(index + 1) % polygon.length]
-        ) &&
-        !this.isPointOnSegment(
-          polygon[index],
-          segmentEnd,
-          polygon[(index + 1) % polygon.length]
-        ) &&
-        this.checkClosedIntersection(
+        this.checkHalfOpenIntersection(
           segmentStart,
           segmentEnd,
           polygon[index],
           polygon[(index + 1) % polygon.length]
         )
       ) {
+        if (consoleFlag) {
+          console.log("Intersected boundary");
+        }
         return true;
       }
+    }
+
+    if (consoleFlag) {
+      console.log("either all inside or all outside");
     }
 
     //if there are no intersections check the mid point with a horizontal line and count how line intersect on the left. Odd means inside and even means outside.
@@ -210,10 +245,10 @@ class PointUtils {
       (segmentStart[1] + segmentEnd[1]) / 2,
     ];
 
-    return this.isPointinOpenPolygon(midPoint, polygon);
+    return this.isPointinOpenPolygon(midPoint, polygon, consoleFlag);
   }
 
-  isPointinOpenPolygon(point, polygon) {
+  isPointinOpenPolygon(point, polygon, consoleFlag = false) {
     const pointAtInfinityTotheLeft = [Number.MIN_SAFE_INTEGER, point[1]];
     let intersectCount = 0;
     let onSegment = false;
@@ -224,12 +259,13 @@ class PointUtils {
           point,
           node,
           polygon[(index + 1) % polygon.length]
-        )
+        ) &&
+        node[1] !== point[1]
       ) {
-        intersectCount++;
-        if (node[1] == point[1]) {
-          intersectCount--;
+        if (consoleFlag) {
+          console.log("intersect++");
         }
+        intersectCount++;
       }
 
       if (
@@ -239,6 +275,9 @@ class PointUtils {
           polygon[(index + 1) % polygon.length]
         )
       ) {
+        if (consoleFlag) {
+          console.log("is point on segment");
+        }
         onSegment = true;
       }
     });
@@ -246,87 +285,141 @@ class PointUtils {
     if (onSegment) {
       return false;
     } else {
+      if (consoleFlag) {
+        console.log(intersectCount % 2 == 1);
+      }
       return intersectCount % 2 == 1;
     }
   }
 
-  getBidrectionalGraphfromPolygon(polygon) {
-    console.log("getBidrection", polygon);
-    return polygon.map((node, index) => {
+  getBidrectionalGraphfromPolygon(polygon, edgeCount) {
+    const graph = [];
+    for (let index = 0; index < polygon.length; index++) {
       const leftIndex = (index - 1 + polygon.length) % polygon.length;
       const rightIndex = (index + 1) % polygon.length;
-
-      return [
-        [leftIndex, this.distance(node, polygon[leftIndex])],
-        [rightIndex, this.distance(node, polygon[rightIndex])],
-      ];
-    });
+      graph.push([
+        [
+          leftIndex + edgeCount,
+          this.distance(polygon[index], polygon[leftIndex]),
+        ],
+        [
+          rightIndex + edgeCount,
+          this.distance(polygon[index], polygon[rightIndex]),
+        ],
+      ]);
+    }
+    return graph;
   }
 
   buildPathingGraphFromPolygons(polygons) {
     const pathEdges = [];
-    let edgeCount = 0;
-    console.log(polygons);
-    polygons.forEach((polygon) => {
-      const graph = this.getBidrectionalGraphfromPolygon(polygon);
-      graph.forEach((node) => {
-        node.forEach((nodeEdge) => {
-          nodeEdge[0] += edgeCount;
-        });
-      });
-      edgeCount += polygon.length;
-      pathEdges.push(...graph);
-    });
-
     const pathNodes = [];
-    polygons.forEach((polygon) => pathNodes.push(...polygon));
 
-    console.log("building", pathEdges, pathNodes);
+    let edgeCount = 0;
+    for (let index = 0; index < polygons.length; index++) {
+      pathEdges.push(
+        ...this.getBidrectionalGraphfromPolygon(polygons[index], edgeCount)
+      );
+      pathNodes.push(...polygons[index]);
+      edgeCount += polygons[index].length;
+    }
 
-    pathNodes.forEach((startNode, startIndex) => {
-      pathNodes.forEach((endNode, endIndex) => {
+    for (let startIndex = 0; startIndex < pathNodes.length - 1; startIndex++) {
+      for (
+        let endIndex = startIndex + 1;
+        endIndex < pathNodes.length;
+        endIndex++
+      ) {
         if (
-          endIndex > startIndex &&
           endIndex != pathEdges[startIndex][0][0] &&
           endIndex != pathEdges[startIndex][1][0] &&
-          !polygons.some((polygon) =>
-            this.isSegmentinPolygon(startNode, endNode, polygon)
+          !this.segmentIntersectsPolygons(
+            pathNodes[startIndex],
+            pathNodes[endIndex],
+            polygons
           )
         ) {
-          const distance = this.distance(startNode, endNode);
+          const distance = this.distance(
+            pathNodes[startIndex],
+            pathNodes[endIndex]
+          );
           pathEdges[startIndex].push([endIndex, distance]);
           pathEdges[endIndex].push([startIndex, distance]);
         }
-      });
-    });
+      }
+    }
 
     return [pathNodes, pathEdges];
   }
 
-  sqr(x) {
-    return x * x;
+  segmentIntersectsPolygons(startPoint, endPoint, polygons) {
+    const potentialStartPoint = [
+      [startPoint[0] + 0.001, startPoint[1]],
+      [startPoint[0] - 0.00087, startPoint[1] - 0.0005],
+      [startPoint[0] - 0.00087, startPoint[1] + 0.0005],
+    ];
+
+    const potentialEndPoint = [
+      [endPoint[0] + 0.001, endPoint[1]],
+      [endPoint[0] - 0.00087, endPoint[1] - 0.0005],
+      [endPoint[0] - 0.00087, endPoint[1] + 0.0005],
+    ];
+
+    for (let index = 0; index < polygons.length; index++) {
+      const polygon = polygons[index];
+      if (
+        this.isSegmentinPolygon(
+          potentialStartPoint[0],
+          potentialEndPoint[0],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[0],
+          potentialEndPoint[1],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[0],
+          potentialEndPoint[2],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[1],
+          potentialEndPoint[0],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[1],
+          potentialEndPoint[1],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[1],
+          potentialEndPoint[2],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[2],
+          potentialEndPoint[0],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[2],
+          potentialEndPoint[1],
+          polygon
+        ) &&
+        this.isSegmentinPolygon(
+          potentialStartPoint[2],
+          potentialEndPoint[2],
+          polygon
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
-  distanceSquared(point1, point2) {
-    return this.sqr(point1[0] - point2[0]) + this.sqr(point1[1] - point2[1]);
-  }
-  distToSegmentSquared(point, segmentStart, segmentEnd) {
-    var l2 = this.distanceSquared(segmentStart, segmentEnd);
-    if (l2 == 0) return this.distanceSquared(point, segmentStart);
-    var t =
-      ((point[0] - segmentStart[0]) * (segmentEnd[0] - segmentStart[0]) +
-        (point[1] - segmentStart[1]) * (segmentEnd[1] - segmentStart[1])) /
-      l2;
-    t = Math.max(0, Math.min(1, t));
-    return this.distanceSquared(point, {
-      x: segmentStart[0] + t * (segmentEnd[0] - segmentStart[0]),
-      y: segmentStart[1] + t * (segmentEnd[1] - segmentStart[1]),
-    });
-  }
-  distToSegment(point, segmentStart, segmentEnd) {
-    return Math.sqrt(
-      this.distToSegmentSquared(point, segmentStart, segmentEnd)
-    );
-  }
+
   projectPointOntoSegment(point, segmentStart, segmentEnd) {
     const apx = point[0] - segmentStart[0];
     const apy = point[1] - segmentStart[1];
@@ -339,6 +432,246 @@ class PointUtils {
     if (ratio < 0) return [segmentStart[0], segmentStart[1]];
     else if (ratio > 1) return [segmentEnd[0], segmentEnd[1]];
     else return [segmentStart[0] + ratio * abx, segmentStart[1] + ratio * aby];
+  }
+
+  kickPointOutofPolygon(point, polygon) {
+    let nearestPoint = [0, 0];
+    let smallestDistance = Number.MAX_SAFE_INTEGER;
+
+    polygon.forEach((edge, index) => {
+      const projection = this.projectPointOntoSegment(
+        point,
+        edge,
+        polygon[(index + 1) % polygon.length]
+      );
+      const distance = this.distance(point, projection);
+      if (distance < smallestDistance) {
+        smallestDistance = distance;
+        nearestPoint = projection;
+      }
+    });
+
+    return nearestPoint;
+  }
+
+  getIndexandDistanceOfNearestVertexInPolygon(point, listOfPoints) {
+    let nearestIndex = 0;
+    let smallestDistance = Number.MAX_SAFE_INTEGER;
+
+    listOfPoints.forEach((listPoint, index) => {
+      const distance = this.distance(point, listPoint);
+      if (distance < smallestDistance) {
+        smallestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+
+    return [nearestIndex, smallestDistance];
+  }
+
+  getPointRotatedAroundPoint(point, center, angleDeg) {
+    const angleRad = angleDeg * (Math.PI / 180); // Convert angle from degrees to radians
+    const x = point[0],
+      y = point[1];
+    const xc = center[0],
+      yc = center[1];
+
+    const xPrime =
+      (x - xc) * Math.cos(angleRad) - (y - yc) * Math.sin(angleRad) + xc;
+    const yPrime =
+      (x - xc) * Math.sin(angleRad) + (y - yc) * Math.cos(angleRad) + yc;
+
+    return [xPrime, yPrime];
+  }
+
+  getPath(startPoint, endPoint, pathNodes, pathEdges, terrainNodes) {
+    startPoint = [startPoint[0], startPoint[1]];
+    endPoint = [endPoint[0], endPoint[1]];
+    terrainNodes.forEach((terrain) => {
+      if (this.isPointinOpenPolygon(endPoint, terrain)) {
+        const projection = this.kickPointOutofPolygon(endPoint, terrain);
+        endPoint[0] = projection[0];
+        endPoint[1] = projection[1];
+      }
+    });
+
+    const startEdges = [];
+    const potentialStartPoints = [
+      [startPoint[0] + 0.001, startPoint[1]],
+      [startPoint[0] - 0.00087, startPoint[1] - 0.0005],
+      [startPoint[0] - 0.00087, startPoint[1] + 0.0005],
+    ];
+
+    pathNodes.forEach((node, index) => {
+      if (
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialStartPoints[0], node, terrain)
+        ) ||
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialStartPoints[1], node, terrain)
+        ) ||
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialStartPoints[2], node, terrain)
+        )
+      ) {
+        startEdges.push([index, this.distance(startPoint, node)]);
+      }
+    });
+
+    const endEdges = [];
+    const potentialEndPoints = [
+      [endPoint[0] + 0.001, endPoint[1]],
+      [endPoint[0] - 0.00087, endPoint[1] - 0.0005],
+      [endPoint[0] - 0.00087, endPoint[1] + 0.0005],
+    ];
+    pathNodes.forEach((node, index) => {
+      if (
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialEndPoints[0], node, terrain)
+        ) ||
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialEndPoints[1], node, terrain)
+        ) ||
+        !terrainNodes.some((terrain) =>
+          this.isSegmentinPolygon(potentialEndPoints[2], node, terrain)
+        )
+      ) {
+        endEdges.push([index, this.distance(endPoint, node)]);
+      }
+    });
+
+    if (
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[0],
+          potentialEndPoints[0],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[0],
+          potentialEndPoints[1],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[0],
+          potentialEndPoints[2],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[1],
+          potentialEndPoints[0],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[1],
+          potentialEndPoints[1],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[1],
+          potentialEndPoints[2],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[2],
+          potentialEndPoints[0],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[2],
+          potentialEndPoints[1],
+          terrain
+        )
+      ) ||
+      !terrainNodes.some((terrain) =>
+        this.isSegmentinPolygon(
+          potentialStartPoints[2],
+          potentialEndPoints[2],
+          terrain
+        )
+      )
+    ) {
+      return { x: [endPoint[0]], y: [endPoint[1]] };
+    }
+
+    //Make temporary editions to the the pathing graph
+    pathNodes.push(startPoint, endPoint); //You can get random stuff happening
+    pathEdges.push(startEdges);
+
+    endEdges.forEach((edge) => {
+      pathEdges[edge[0]].push([pathNodes.length - 1, edge[1]]);
+    });
+
+    const path = this.aStar(
+      pathNodes.length - 2,
+      pathNodes.length - 1,
+      pathNodes,
+      pathEdges
+    );
+
+    if (path == "No path found") {
+      //oops something is broken check the point utils
+      console.log(
+        "No path found. Details:",
+        "\nStart Edges:",
+        startEdges,
+        "\nEnd Edges:",
+        endEdges,
+        "\nStart Coordinates:",
+        startPoint,
+        "\nEnd Coordinates:",
+        endPoint,
+        "\nStart inside terrain:",
+        terrainNodes.some((terrain) =>
+          this.isPointinOpenPolygon(startPoint, terrain)
+        ),
+        "\nEnd inside terrain:",
+        terrainNodes.some((terrain) =>
+          this.isPointinOpenPolygon(endPoint, terrain)
+        )
+      );
+    }
+
+    //Transform the raw path into a entity movement path
+    path.shift();
+    if (this.distance(startPoint, pathNodes[path[0]]) == 0) {
+      path.shift();
+    }
+
+    const output = { x: [], y: [] };
+    path.forEach((index) => {
+      output.x.push(pathNodes[index][0]);
+      output.y.push(pathNodes[index][1]);
+    });
+
+    //Cleanup the graph
+    pathNodes.length -= 2;
+    pathEdges.length -= 1;
+    endEdges.forEach((edge) => {
+      pathEdges[edge[0]].length -= 1;
+    });
+    return output;
+  }
+
+  projectPointOntoCircle(point, center, radius) {
+    const relX = point[0] - center[0];
+    const relY = point[1] - center[1];
+    const scale = radius / Math.sqrt(relX * relX + relY * relY);
+    return [relX * scale + center[0], relY * scale + center[1]];
   }
 }
 

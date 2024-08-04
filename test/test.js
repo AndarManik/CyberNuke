@@ -1,4 +1,5 @@
-const { pointUtils } = require("../server/point-utils");
+const { PathCalculator } = require("../server/path-calculator.js");
+const { pointUtils } = require("../server/point-utils.js");
 
 test("distance pythagorean", () => {
   expect(pointUtils.distance([0, 3], [4, 0])).toBe(5);
@@ -201,12 +202,27 @@ test("isSegmentinPolygon inside segment is polygon points", () => {
   expect(
     pointUtils.isSegmentinPolygon(
       [5, 0],
-      [-4, 0],
+      [-20, 0],
       [
         [0, 5],
         [5, 0],
         [0, -5],
         [-5, 0],
+      ]
+    )
+  ).toBe(true);
+});
+
+test("isSegmentinPolygon inside segment is polygon edge new!!!!!!", () => {
+  expect(
+    pointUtils.isSegmentinPolygon(
+      [2, 0],
+      [2, 10],
+      [
+        [0, 0],
+        [5, 0],
+        [5, 5],
+        [0, 5],
       ]
     )
   ).toBe(true);
@@ -334,20 +350,72 @@ test("checkOpenIntersection real data < shape", () => {
 
 test("projectPointOntoSegment", () => {
   expect(
-    pointUtils.projectPointOntoSegment(
-      [150, 0],
-      [100, 177.5],
-      [175, 177.5],
-    )
-  ).toStrictEqual([150,177.5]);
+    pointUtils.projectPointOntoSegment([150, 0], [100, 177.5], [175, 177.5])
+  ).toStrictEqual([150, 177.5]);
 });
 
-test("distToSegment", () => {
+test("isSegmentinPolygon real data new", () => {
   expect(
-    pointUtils.distToSegment(
-      [150, 0],
-      [100, 177.5],
-      [175, 177.5],
+    pointUtils.isSegmentinPolygon(
+      [191.25, 250],
+      [191.25, 193.5],
+      [
+        [133.75, 225],
+        [143.75, 215],
+        [181.25, 215],
+        [191.25, 225],
+        [191.25, 250],
+        [181.25, 260],
+        [143.75, 260],
+        [133.75, 250],
+      ],
+      true
     )
-  ).toStrictEqual(177.5);
+  ).toBe(true);
+});
+
+test("isSegmentinPolygon real data new", () => {
+  expect(
+    pointUtils.isSegmentinPolygon(
+      [236.2085784158557, 260],
+      [218.75, 260],
+      [
+        [208.75, 225],
+        [218.75, 215],
+        [256.25, 215],
+        [266.25, 225],
+        [266.25, 250],
+        [256.25, 260],
+        [218.75, 260],
+        [208.75, 250],
+      ],
+      true
+    )
+  ).toBe(false);
+});
+
+test("isPointinOpenPolygon real data new", () => {
+  expect(
+    pointUtils.isPointinOpenPolygon(
+      [(236.2085784158557 + 218.75) / 2, (260 + 260) / 2],
+      [
+        [208.75, 225],
+        [218.75, 215],
+        [256.25, 215],
+        [266.25, 225],
+        [266.25, 250],
+        [256.25, 260],
+        [218.75, 260],
+        [208.75, 250],
+      ],
+      true
+    )
+  ).toBe(false);
+});
+
+
+test("intersection segment circle", () => {
+  expect(
+    pointUtils.getIntersectionSegmentCircle([0, -10], [0, 10], [0, 0], 5)
+  ).toStrictEqual([[0,-5],[0,5]]);
 });

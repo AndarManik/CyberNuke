@@ -21,8 +21,8 @@ class Line {
 
   render() {
     this.element.style.transform = `translate(${
-      this.entityX - this.player.playerX
-    }px, ${this.entityY - this.player.playerY}px)`;
+      this.entityX - this.player.entityX
+    }px, ${this.entityY - this.player.entityY}px)`;
   }
 
   remove() {

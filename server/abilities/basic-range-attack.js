@@ -1,4 +1,4 @@
-const { players, entities } = require("../state.js");
+const { players, entities, globalEntities, targetable } = require("../state.js");
 const { v4: uuidv4 } = require("uuid");
 const {DamageIndicatorEntity} = require("../damage-indicator.js");
 
@@ -6,9 +6,9 @@ class BasicRangeAttack {
   constructor(caster) {
     this.caster = caster;
 
-    this.cooldown = 0.2 * 60;
+    this.cooldown = 3 * 60;
     this.countdown = 0;
-    this.castRange = 200;
+    this.castRange = 100;
   }
 
   update() {
@@ -21,33 +21,33 @@ class BasicRangeAttack {
 
     const player = players[this.caster];
     
-    const trueMouseX = player.playerX + player.mouseX;
-    const trueMouseY = player.playerY + player.mouseY;
+    const trueMouseX = player.entityX + player.mouseX;
+    const trueMouseY = player.entityY + player.mouseY;
 
-    const enemiesInCastRange = Object.keys(players)
+    const enemiesInCastRange = Object.keys(targetable)
       .map((key) => ({
         key,
         distance: Math.sqrt(
-          Math.pow(players[key].playerX - player.playerX, 2) +
-            Math.pow(players[key].playerY - player.playerY, 2)
+          Math.pow(targetable[key].entityX - player.entityX, 2) +
+            Math.pow(targetable[key].entityY - player.entityY, 2)
         ),
       }))
-      .filter((otherPlayer) => {
+      .filter((target) => {
         return (
-          otherPlayer.distance < this.castRange + 10 &&
-          otherPlayer.key != this.caster
+          target.distance < this.castRange + 10 &&
+          target.key != this.caster
         );
       });
 
     if (enemiesInCastRange.length == 0) return;
 
     const enemiesNearCursor = enemiesInCastRange
-      .map((otherPlayer) => {
-        otherPlayer.distance = Math.sqrt(
-          Math.pow(players[otherPlayer.key].playerX - trueMouseX, 2) +
-            Math.pow(players[otherPlayer.key].playerY - trueMouseY, 2)
+      .map((target) => {
+        target.distance = Math.sqrt(
+          Math.pow(targetable[target.key].entityX - trueMouseX, 2) +
+            Math.pow(targetable[target.key].entityY - trueMouseY, 2)
         );
-        return otherPlayer;
+        return target;
       })
       .sort((a, b) => a.distance - b.distance);
 
@@ -73,32 +73,37 @@ class BasicRangeAttackEntity {
     this.receiver = receiver;
 
     entities[this.id] = this;
+    globalEntities[this.id] = this;
 
     this.movespeed = 7.5;
-    this.entityX = players[this.caster].playerX;
-    this.entityY = players[this.caster].playerY;
-    this.damage = 20;
+    this.entityX = players[this.caster].entityX;
+    this.entityY = players[this.caster].entityY;
+    this.damage = 60;
   }
 
   update() {
-    if (!(this.receiver in players)) {
+    if (!(this.receiver in targetable)) {
       delete entities[this.id];
+      delete globalEntities[this.id];
+
       return;
     }
 
-    const dx = this.entityX - players[this.receiver].playerX;
-    const dy = this.entityY - players[this.receiver].playerY;
+    const dx = this.entityX - targetable[this.receiver].entityX;
+    const dy = this.entityY - targetable[this.receiver].entityY;
     const distBetween = Math.sqrt(dx * dx + dy * dy);
 
     this.entityX -= dx / distBetween * this.movespeed;
     this.entityY -= dy / distBetween * this.movespeed;
 
     if(distBetween <= this.movespeed) {
-      if (players[this.receiver]) {
-        players[this.receiver].takeDamage(this.damage);
+      if (targetable[this.receiver]) {
+        targetable[this.receiver].takeDamage(this.damage);
         new DamageIndicatorEntity(this.damage, this.caster, this.receiver)
       }
       delete entities[this.id];
+      delete globalEntities[this.id];
+
     }
   }
 

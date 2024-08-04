@@ -1,3 +1,5 @@
+import {gameWindow} from "./clientState.js"
+
 class DamageIndicatorEntity {
   constructor(player, state, userID) {
     this.player = player;
@@ -11,13 +13,18 @@ class DamageIndicatorEntity {
     style.position = "absolute";
     style.fontSize = 12;
     style.color =
-      state.caster == userID ? "hsl(250, 14%, 10%)" : "hsl(8, 75%, 55%)";
+      state.caster == userID ? "hsl(250, 6%, 75%)" : "hsl(8, 65%, 65%)";
+
+    style.textShadow =
+      state.caster == userID
+        ? "0 0 10px hsl(250, 6%, 75%)"
+        : "0 0 10px hsl(8, 65%, 65%)";
+
     style.zIndex = 5;
     this.element.innerText = state.damageDealt;
-
-    document.getElementById("gameWindow").append(this.element);
-
     this.setState(state);
+
+    gameWindow.append(this.element);
   }
 
   setState(state) {
@@ -27,8 +34,8 @@ class DamageIndicatorEntity {
 
   render() {
     this.element.style.transform = `translate(${
-      this.entityX - this.player.playerX + 20
-    }px, ${this.entityY - this.player.playerY - 40}px)`;
+      this.entityX - this.player.entityX + 20
+    }px, ${this.entityY - this.player.entityY - 40}px)`;
   }
 
   remove() {

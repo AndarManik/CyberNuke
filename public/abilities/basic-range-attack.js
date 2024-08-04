@@ -1,3 +1,4 @@
+import { gameWindow } from "../clientState.js";
 class BasicRangeAttack {
   constructor() {
     this.cooldown = 1;
@@ -6,22 +7,24 @@ class BasicRangeAttack {
     this.element.style.width = this.castRange;
     this.element.style.height = this.castRange;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "#a9646433";
-    this.element.style.border = "1px solid #a96464dd"
+    this.element.style.backgroundColor = "hsla(0, 65%, 65%, 0.05)";
 
-    this.element.style.left = 350 - this.castRange/2;
-    this.element.style.top = 350 - this.castRange/2;
+    this.element.style.border = "1px solid hsla(0, 65%, 65%, 0.1)";
+
+    this.element.style.left = 350 - this.castRange / 2;
+    this.element.style.top = 350 - this.castRange / 2;
 
     this.element.style.display = "none";
     this.element.style.position = "absolute";
 
-
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
-  setState(state){
+  setState(state) {
     this.cooldown = state.cooldown;
     this.castRange = state.castRange * 2;
+    this.element.style.left = 350 - this.castRange / 2;
+    this.element.style.top = 350 - this.castRange / 2;
   }
 
   render() {
@@ -30,7 +33,7 @@ class BasicRangeAttack {
     this.element.style.borderRadius = this.castRange;
   }
 
-  activate(){
+  activate() {
     this.element.style.display = "block";
   }
 
@@ -51,11 +54,16 @@ class BasicRangeAttackEntity {
     this.entityY = state.entityY;
 
     this.element = document.createElement("div");
-    this.element.classList.add("basicattack");
+    this.element.style.height = "10px";
+    this.element.style.width = "10px";
+    this.element.style.backgroundColor = "hsl(0, 65%, 65%)";
+
+    this.element.style.borderRadius = "15px";
+    this.element.style.position = "absolute";
     this.element.style.left = 350 - 5;
     this.element.style.top = 350 - 5;
 
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
   setState(state) {
@@ -64,10 +72,9 @@ class BasicRangeAttackEntity {
   }
 
   render() {
-
     this.element.style.transform = `translate(${
-      this.entityX - this.player.playerX
-    }px, ${this.entityY - this.player.playerY}px)`;
+      this.entityX - this.player.entityX
+    }px, ${this.entityY - this.player.entityY}px)`;
   }
 
   remove() {

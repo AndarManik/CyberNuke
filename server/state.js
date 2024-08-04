@@ -1,5 +1,18 @@
 const players = {};
 const entities = {};
-const pits = {};
+const targetable = {};
+const static = {};
+const playerGraveyard = {};
+const globalEntities = {};
 
-module.exports = { players, entities, pits };
+let tickCounter = 0;
+
+function currentTick() {
+  return tickCounter;
+}
+
+function incrementTick() {
+  tickCounter++;
+}
+
+module.exports = { players, entities, targetable, static, playerGraveyard, globalEntities, currentTick, incrementTick };

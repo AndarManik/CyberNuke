@@ -1,21 +1,22 @@
+import { gameWindow } from "../clientState.js";
 class BasicShield {
   constructor() {
     this.cooldown = 1;
     this.castRange = 40;
     this.element = document.createElement("div");
-    this.element.style.width = this.castRange;
-    this.element.style.height = this.castRange;
+    this.element.style.width = this.castRange - 2;
+    this.element.style.height = this.castRange - 2;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "hsla(220, 29%, 53%, 0.2)";
-    this.element.style.border = "1px solid hsla(220, 29%, 53%, 0.867)";
+    this.element.style.backgroundColor = "hsla(220, 65%, 65%, 0.05)";
+    this.element.style.border = "1px solid hsla(220, 65%, 65%, 0.1)";
 
-    this.element.style.left = 350 - this.castRange/2 - 1;
-    this.element.style.top = 350 - this.castRange/2 - 1;
+    this.element.style.left = 350 - this.castRange/2;
+    this.element.style.top = 350 - this.castRange/2;
 
     this.element.style.display = "none";
     this.element.style.position = "absolute";
 
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
   setState(state) {
@@ -50,12 +51,13 @@ class BasicShieldEntity {
     style.width = 40;
     style.height = 40;
     style.borderRadius = "40px";
-    style.backgroundColor = "hsl(220, 29%, 53%)";
+    style.backgroundColor = "hsl(220, 65%, 65%)";
+
     style.left = 350 - 20;
     style.top = 350 - 20;
     style.position = "absolute";
 
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
   setState(state) {
@@ -65,8 +67,8 @@ class BasicShieldEntity {
 
   render() {
     this.element.style.transform = `translate(${
-      this.entityX - this.player.playerX
-    }px, ${this.entityY - this.player.playerY}px)`;
+      this.entityX - this.player.entityX
+    }px, ${this.entityY - this.player.entityY}px)`;
   }
 
   remove() {

@@ -1,11 +1,11 @@
-const { players, entities } = require("../state.js");
+const { players, entities, globalEntities } = require("../state.js");
 const { v4: uuidv4 } = require("uuid");
 
 class BasicShield {
   constructor(caster) {
     this.caster = caster;
 
-    this.cooldown = 2 * 60;
+    this.cooldown = 5 * 60;
     this.countdown = 0;
   }
 
@@ -32,14 +32,15 @@ class BasicShieldEntity {
     this.caster = caster;
 
     entities[this.id] = this;
+    globalEntities[this.id] = this;
 
-    this.entityX = players[this.caster].playerX;
-    this.entityY = players[this.caster].playerY;
+    this.entityX = players[this.caster].entityX;
+    this.entityY = players[this.caster].entityY;
 
-    this.framesToFinish = 1 * 60; //1 seconds
+    this.framesToFinish = 1.5 * 60; //1 seconds
     this.framesSinceCast = 0;
 
-    this.shieldHealth = 70;
+    this.shieldHealth = 200;
 
     players[this.caster].addShield(this.shieldHealth, this.id);
   }
@@ -47,21 +48,27 @@ class BasicShieldEntity {
   update() {
     if(!(this.caster in players)){
       delete entities[this.id];
+      delete globalEntities[this.id];
+
       return;
     } 
 
-    this.entityX = players[this.caster].playerX;
-    this.entityY = players[this.caster].playerY;
+    this.entityX = players[this.caster].entityX;
+    this.entityY = players[this.caster].entityY;
 
     this.framesSinceCast++;
 
     if(!players[this.caster].hasShield((this.id))) {//shield depleted on player
         delete entities[this.id];
+        delete globalEntities[this.id];
+
     }
 
     if (this.framesSinceCast >= this.framesToFinish) {//shields duration is over
       players[this.caster].removeShield(this.id) ;
       delete entities[this.id];
+      delete globalEntities[this.id];
+
     }
   }
 

@@ -3,8 +3,8 @@
   --background: hsl(250, 14%, 10%);
   --primary: #c7b5b9;
   --terrain: hsla(250, 14%, 10%, 0.25);
-  --ground: hsl(250, 10%, 85%);
-  --basicattack: hsl(0, 29%, 53%);
+  --ground: hsl(250, 65%, 65%);
+  --basicattack: hsl(15, 65%, 65%);
 }
 
 * {
@@ -28,7 +28,7 @@ body {
   padding: 0;
   width: 700px;
   height: 700px;
-  background-color: var(--ground);
+  background-color: var(--background);
   border-radius: 350px;
   position: relative;
 }
@@ -37,11 +37,14 @@ body {
   position: absolute;
   margin: 0;
   padding: 0;
-  width: 700px;
-  height: 700px;
+  margin-top: 2px;
+  margin-left: 2px;  
+  width: 696px;
+  height: 696px;
   background-color: #00000000;
   border-radius: 7500px;
   border: var(--background) 5000px solid;
+  box-shadow: inset 0 0 20px 2px hsl(250, 14%, 5%);
   z-index: 1000;
 }
 
@@ -63,7 +66,7 @@ body {
   margin-top: 560px;
   width: 185px;
   height: 30px;
-  border: #100c0d 2px solid;
+  border: hsla(250, 14%, 65%, 1) 2px solid;
   border-radius: 5px;
   display: flex;
 }
@@ -71,14 +74,14 @@ body {
 #currentHealthHud {
   height: 100%;
   width: 100%;
-  background-color: rgba(92, 126, 51, 0.744);
+  background-color: hsla(90, 35%, 45%, 0.75);
   border-radius: 3px;
 }
 
 #currentShieldHud {
   height: 100%;
   width: 1%;
-  background-color: hsla(200, 42%, 35%, 0.693);
+  background-color: hsla(210, 35%, 45%, 0.75);
 
   border-radius: 3px;
 }
@@ -94,15 +97,15 @@ body {
   margin-top: 460px;
   height: 40px;
   width: 40px;
-  background-color: #100c0d88;
-  border: #100c0d88 2px solid;
+  background-color: hsla(345, 14%, 65%, 0.533);
+  border: hsla(250, 14%, 65%, 1) 2px solid;
   border-radius: 5px;
   will-change: width, height, margin, border-radius;
 }
 #player {
   height: 20px;
   width: 20px;
-  background-color: var(--background);
+  background-color: var(--ground);
   transform: translate(340px, 340px);
   border-radius: 15px;
   position: relative;
@@ -115,7 +118,7 @@ body {
   position: absolute;
   width: 46px;
   height: 6px;
-  border: #100c0d88 2px solid;
+  border: hsla(250, 14%, 35%, 1) 2px solid;
   border-radius: 2px;
   z-index: unset;
   display: flex;
@@ -124,19 +127,19 @@ body {
 .currentHealth {
   height: 100%;
   width: 100%;
-  background-color: rgba(92, 126, 51, 0.693);
+  background-color: hsla(90, 35%, 45%, 1);
 }
 
 .currentShield {
   height: 100%;
   width: 1px;
-  background-color: hsla(200, 42%, 35%, 0.693);
+  background-color: hsla(210, 35%, 45%, 1);
 }
 
 .otherPlayer {
   height: 20px;
   width: 20px;
-  background-color: var(--background);
+  background-color: var(--ground);
   border-radius: 15px;
   position: absolute;
   z-index: 1;
@@ -146,14 +149,14 @@ body {
   height: 5px;
   width: 5px;
   border-radius: 5px;
-  background-color: hsla(250, 14%, 10%, 0.25);
+  background-color: hsla(250, 14%, 65%, 0.25);
 }
 
 .terrain2 {
   height: 3px;
   width: 3px;
   border-radius: 3px;
-  background-color: hsla(250, 14%, 10%, 0.125);
+  background-color: hsla(250, 14%, 65%, 0.125);
 }
 
 .basicattack {

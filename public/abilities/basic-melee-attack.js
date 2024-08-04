@@ -1,3 +1,4 @@
+import { gameWindow } from "../clientState.js";
 class BasicMeleeAttack {
   constructor() {
     this.cooldown = 1;
@@ -6,8 +7,8 @@ class BasicMeleeAttack {
     this.element.style.width = this.castRange;
     this.element.style.height = this.castRange;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "hsla(60, 29%, 53%, 0.2)";
-    this.element.style.border = "1px solid hsla(60, 29%, 53%, 0.867)";
+    this.element.style.backgroundColor = "hsla(60, 65%, 65%, 0.05)";
+    this.element.style.border = "1px solid hsla(60, 65%, 65%, 0.1)";
 
     this.element.style.left = 350 - this.castRange;
     this.element.style.top = 350 - this.castRange;
@@ -15,7 +16,7 @@ class BasicMeleeAttack {
     this.element.style.display = "none";
     this.element.style.position = "absolute";
 
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
   setState(state) {
@@ -47,32 +48,33 @@ class BasicMeleeAttackEntity {
     this.receiver =
       state.receiver == userID ? player : otherPlayers[state.receiver];
 
-    this.entityX = this.caster.playerX;
-    this.entityY = this.caster.playerY;
+    this.entityX = this.caster.entityX;
+    this.entityY = this.caster.entityY;
     this.direction = state.direction;
 
     this.element = document.createElement("div");
     const style = this.element.style;
     style.width = 15;
     style.height = 50;
-    style.backgroundColor = "hsl(60, 29%, 53%)";
+    style.backgroundColor = "hsl(60, 65%, 65%)";
+
     style.left = 350 - 7.5;
     style.top = 350 - 25;
     style.position = "absolute";
 
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
   }
 
   setState(state) {
-    this.entityX = this.caster.playerX;
-    this.entityY = this.caster.playerY;
+    this.entityX = this.caster.entityX;
+    this.entityY = this.caster.entityY;
     this.direction = state.direction;
   }
 
   render() {
     this.element.style.transform = `translate(${
-      this.entityX - this.player.playerX + Math.sin(this.direction) * 25
-    }px, ${this.entityY - this.player.playerY + Math.cos(this.direction) * -25}px) rotate(${57.3 * this.direction}deg)`;
+      this.entityX - this.player.entityX + Math.sin(this.direction) * 25
+    }px, ${this.entityY - this.player.entityY + Math.cos(this.direction) * -25}px) rotate(${57.3 * this.direction}deg)`;
   }
 
   remove() {

@@ -1,3 +1,4 @@
+import { gameWindow } from "./clientState.js";
 class OtherPlayer {
   constructor(player, state) {
     this.player = player;
@@ -11,20 +12,21 @@ class OtherPlayer {
 
     this.healthBar = document.createElement("div");
     this.healthBar.classList.add("currentHealth");
+    this.healthBar.style.backgroundColor = "hsl(0, 35%, 45%)";
     this.shieldBar = document.createElement("div");
     this.shieldBar.classList.add("currentShield");
 
     healthBar.appendChild(this.healthBar);
     healthBar.appendChild(this.shieldBar);
     this.element.append(healthBar);
-    document.getElementById("gameWindow").append(this.element);
+    gameWindow.append(this.element);
 
     this.setState(state);
   }
 
   setState(state) {
-    this.playerX = state.playerX;
-    this.playerY = state.playerY;
+    this.entityX = state.entityX;
+    this.entityY = state.entityY;
     this.maxHealth = state.maxHealth;
     this.health = state.health;
     this.shield = state.shield;
@@ -32,22 +34,29 @@ class OtherPlayer {
 
   render() {
     this.element.style.transform = `translate(${
-      this.playerX - this.player.playerX
-    }px, ${this.playerY - this.player.playerY}px)`;
+      this.entityX - this.player.entityX
+    }px, ${this.entityY - this.player.entityY}px)`;
 
     if (this.health + this.shield > this.maxHealth) {
-        const currentPercentage = Math.max(0, (100 * this.health) / (this.health + this.shield));
-        this.healthBar.style.width = `${currentPercentage}%`;
-        this.shieldBar.style.width = `${100 - currentPercentage}%`;
-
+      const currentPercentage = Math.max(
+        0,
+        (100 * this.health) / (this.health + this.shield)
+      );
+      this.healthBar.style.width = `${currentPercentage}%`;
+      this.shieldBar.style.width = `${100 - currentPercentage}%`;
     } else {
-      const currentPercentageHealth = Math.max(0, (100 * this.health) / this.maxHealth);
-      const currentPercentageShield = Math.max(0, (100 * this.shield) / this.maxHealth);
+      const currentPercentageHealth = Math.max(
+        0,
+        (100 * this.health) / this.maxHealth
+      );
+      const currentPercentageShield = Math.max(
+        0,
+        (100 * this.shield) / this.maxHealth
+      );
 
       this.healthBar.style.width = `${currentPercentageHealth}%`;
       this.shieldBar.style.width = `${currentPercentageShield}%`;
     }
-    
   }
 
   remove() {

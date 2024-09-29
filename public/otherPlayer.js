@@ -1,4 +1,4 @@
-import { gameWindow } from "./clientState.js";
+import { gameWindow } from "./elements.js";
 class OtherPlayer {
   constructor(player, state) {
     this.player = player;

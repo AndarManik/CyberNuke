@@ -1,4 +1,9 @@
-import { gameWindow } from "../clientState.js";
+import {
+  player,
+  otherPlayers,
+  getUserId,
+} from "../client-state.js";
+import { gameWindow } from "../elements.js";
 class BasicRangeAttack {
   constructor() {
     this.cooldown = 1;
@@ -43,12 +48,12 @@ class BasicRangeAttack {
 }
 
 class BasicRangeAttackEntity {
-  constructor(player, state, otherPlayers, userID) {
+  constructor(state) {
     this.player = player;
 
-    this.caster = state.caster == userID ? player : otherPlayers[state.caster];
+    this.caster = state.caster == getUserId() ? player : otherPlayers[state.caster];
     this.receiver =
-      state.receiver == userID ? player : otherPlayers[state.receiver];
+      state.receiver == getUserId() ? player : otherPlayers[state.receiver];
 
     this.entityX = state.entityX;
     this.entityY = state.entityY;

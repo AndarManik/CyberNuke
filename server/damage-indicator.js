@@ -1,51 +1,32 @@
-const { entities, targetable, globalEntities } = require("./state.js");
-const { v4: uuidv4 } = require("uuid");
-
 class DamageIndicatorEntity {
-  constructor(damageDealt, caster, receiver) {
-    this.id = uuidv4();
-    entities[this.id] = this;
-    globalEntities[this.id] = this;
+  constructor(engine, damageDealt, caster, receiver) {
+    this.engine = engine;
+    this.entity = this.engine.newEntity(this, "dynamic", "global");
 
     this.damageDealt = damageDealt;
     this.caster = caster;
     this.receiver = receiver;
 
-    this.framesToRemove = 0.6 * 60;
-    this.framesShown = 0;
-
+    this.timeToRemove = 0.75;
+    this.start = this.engine.newEvent();
     this.velocityX =
-      Math.random() < 0.5
-        ? 0.5 + Math.random() * 0.5
-        : -0.5 - Math.random() * 0.5;
-    this.velocityY = -2;
+      Math.random() < 0.5 ? 30 + Math.random() * 30 : -30 - Math.random() * 30;
+    this.velocityY = -120;
 
-    this.positionX = 0;
-    this.positionY = 0;
-
-    this.entityX = targetable[this.receiver].entityX;
-    this.entityY = targetable[this.receiver].entityY;
+    this.entityX = this.engine.targetable.get(this.receiver).position.x;
+    this.entityY = this.engine.targetable.get(this.receiver).position.y;
   }
 
   update() {
-    if (
-      !(this.receiver in targetable) ||
-      this.framesShown >= this.framesToRemove
-    ) {
-      delete entities[this.id];
-      delete globalEntities[this.id];
+    if (this.start.timeSince() >= this.timeToRemove) {
+      this.entity.remove();
       return;
     }
 
-    this.velocityY += 0.2;
+    this.velocityY += 400 * this.engine.getDelta();
 
-    this.positionX += this.velocityX;
-    this.positionY += this.velocityY;
-
-    this.entityX = targetable[this.receiver].entityX + this.positionX;
-    this.entityY = targetable[this.receiver].entityY + this.positionY;
-
-    this.framesShown++;
+    this.entityX += this.velocityX * this.engine.getDelta();
+    this.entityY += this.velocityY * this.engine.getDelta();
   }
 
   getState() {
@@ -61,4 +42,4 @@ class DamageIndicatorEntity {
   }
 }
 
-module.exports = { DamageIndicatorEntity };
+module.exports = DamageIndicatorEntity;

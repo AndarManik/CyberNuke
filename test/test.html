@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gradient Squares</title>
+    <style>
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 500px;
+        height: 500px; /* height of the gradient area */
+        position: absolute;
+      }
+      .container2 {
+        display: flex;
+        flex-wrap: wrap;
+        width: 500px;
+        height: 500px; /* height of the gradient area */
+        position: absolute;
+      }
+      .square {
+        width: 10px; /* width of each square */
+        height: 10px; /* height of each square */
+        display: inline-block;
+      }
+      .purplecircle {
+        height: 40px;
+        width: 40px;
+        margin: 5px;
+        border-radius: 50px;
+        background-color: oklch(50% 0.175 325);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <script>
+        const container = document.querySelector(".container");
+        for (let index = 0; index < 50; index++) {
+          for (let index2 = 0; index2 < 50; index2++) {
+            const square = document.createElement("div");
+            square.classList.add("square");
+
+            let l = 75; // fixed lightness
+            let c = 0.2 - (index / 49) * 0.2; // fixed chroma
+            let h = 260 - (index2 / 49) * (260 - 390); // hue from 290 to 125 degrees
+            square.style.backgroundColor = `oklch(50% 0.175 325)`;
+
+            container.appendChild(square);
+          }
+        }
+      </script>
+    </div>
+
+    <div class="container2">
+      <script>
+        const container2 = document.querySelector(".container2");
+        for (let index2 = 0; index2 < 10; index2++) {
+          for (let index = 0; index < 10; index++) {
+            const circle = document.createElement("div");
+            circle.classList.add("purplecircle");
+            let h = 260 - (index2 / 9) * (260 - 390); // hue from 290 to 125 degrees
+            circle.style.backgroundColor = `oklch(50% ${0.175} ${h % 360})`;
+            container2.appendChild(circle);
+          }
+        }
+      </script>
+    </div>
+  </body>
+</html>

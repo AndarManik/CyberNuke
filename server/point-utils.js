@@ -484,16 +484,23 @@ class PointUtils {
     return [xPrime, yPrime];
   }
 
+  kickPointOutOfPolygons(point, polygons) {
+    for (let polygon of polygons)
+      if (this.isPointinOpenPolygon(point, polygon))
+        return this.kickPointOutofPolygon(point, polygon);
+    return [point[0], point[1]];
+  }
+
+  isSegmentInPolygons(start, end, polygons) {
+    for (let polygon of polygons)
+      if (this.isSegmentinPolygon(start, end, polygon))
+        return true;
+    return false;
+  }
+
   getPath(startPoint, endPoint, pathNodes, pathEdges, terrainNodes) {
     startPoint = [startPoint[0], startPoint[1]];
-    endPoint = [endPoint[0], endPoint[1]];
-    terrainNodes.forEach((terrain) => {
-      if (this.isPointinOpenPolygon(endPoint, terrain)) {
-        const projection = this.kickPointOutofPolygon(endPoint, terrain);
-        endPoint[0] = projection[0];
-        endPoint[1] = projection[1];
-      }
-    });
+    endPoint = this.kickPointOutOfPolygons(endPoint, terrainNodes);
 
     const startEdges = [];
     const potentialStartPoints = [
@@ -677,4 +684,4 @@ class PointUtils {
 
 const pointUtils = new PointUtils();
 
-module.exports = { pointUtils };
+module.exports =  pointUtils ;

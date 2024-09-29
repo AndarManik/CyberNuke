@@ -1,9 +1,8 @@
-const { A0Monster0Entity } = require("./a0-monster-0.js");
-const { pointUtils } = require("../point-utils.js");
-const { map } = require("../map.js");
+const pointUtils = require("../point-utils.js");
 const { PitRectangleEntity } = require("./pit-rectangle.js");
-const { currentTick } = require("../state.js");
 const { v4: uuidv4 } = require("uuid");
+const AMonster0 = require("./a/monster0_.js");
+const AMonster1 = require("./a/monster1_.js");
 
 const color = 210;
 
@@ -27,7 +26,6 @@ function getPath(startPoint, endPoint, entityX, entityY) {
     startPoint[1] - entityY,
   ];
   const translatedEndPoint = [endPoint[0] - entityX, endPoint[1] - entityY];
-
   const path = pointUtils.getPath(
     translatedStartPoint,
     translatedEndPoint,
@@ -35,21 +33,39 @@ function getPath(startPoint, endPoint, entityX, entityY) {
     pathEdges,
     terrainPolygons
   );
-
   path.x = path.x.map((x) => x + entityX);
   path.y = path.y.map((y) => y + entityY);
-
   return path;
 }
 
+function kickOutTerrain(point, entityX, entityY) {
+  const translatedPoint = [point[0] - entityX, point[1] - entityY];
+  const kickedPoint = pointUtils.kickPointOutOfPolygons(
+    translatedPoint,
+    terrainPolygons
+  );
+  return [kickedPoint[0] + entityX, kickedPoint[1] + entityY];
+}
+
+function isLineInTerrain(start, end, entityX, entityY) {
+  return pointUtils.isSegmentInPolygons(
+    [start[0] - entityX, start[1] - entityY],
+    [end[0] - entityX, end[1] - entityY],
+    terrainPolygons
+  );
+}
+
 class A0MonsterPitEntity {
-  constructor(entityX, entityY) {
-    map.addPit(this);
+  constructor(engine, entityX, entityY) {
+    this.engine = engine;
     this.id = uuidv4();
     this.entityX = entityX;
     this.entityY = entityY;
     this.radius = 125;
     this.color = color;
+    this.lastStateReadTick = 0;
+    this.stateRead = [];
+    this.playersInside = [];
 
     this.terrain = terrainEntities.map((terrain) =>
       terrain.getState(entityX, entityY)
@@ -57,20 +73,54 @@ class A0MonsterPitEntity {
 
     this.entities = [];
     this.entities.push(
-      new A0Monster0Entity(this, this.entityX, this.entityY, 1)
+      new AMonster1(engine, this, this.entityX, this.entityY, 1)
     );
     this.entities.push(
-      new A0Monster0Entity(this, this.entityX + 25, this.entityY + 25, 2)
+      new AMonster1(
+        engine,
+        this,
+        this.entityX + 25,
+        this.entityY + 25,
+        2
+      )
     );
     this.entities.push(
-      new A0Monster0Entity(this, this.entityX - 25, this.entityY + 25, 3)
+      new AMonster0(
+        engine,
+        this,
+        this.entityX - 25,
+        this.entityY + 25,
+        3
+      )
     );
 
     this.entities.push(
-      new A0Monster0Entity(this, this.entityX + 25, this.entityY - 25, 4)
+      new AMonster0(
+        engine,
+        this,
+        this.entityX + 25,
+        this.entityY - 25,
+        4
+      )
     );
     this.entities.push(
-      new A0Monster0Entity(this, this.entityX - 25, this.entityY - 25, 5)
+      new AMonster1(
+        engine,
+        this,
+        this.entityX - 25,
+        this.entityY - 25,
+        5
+      )
+    );
+
+    this.entities.push(
+      new AMonster0(
+        engine,
+        this,
+        this.entityX - 25,
+        this.entityY - 25,
+        6
+      )
     );
 
     this.state = {
@@ -81,11 +131,6 @@ class A0MonsterPitEntity {
       radius: this.radius,
       color: this.color,
     };
-
-
-    this.lastStateReadTick = 0;
-    this.stateRead = [];
-    this.playersInside = [];
   }
 
   addPlayer(player) {
@@ -100,13 +145,21 @@ class A0MonsterPitEntity {
     return getPath(startPoint, endPoint, this.entityX, this.entityY);
   }
 
+  kickOutTerrain(point) {
+    return kickOutTerrain(point, this.entityX, this.entityY);
+  }
+
+  isLineInTerrain(start, end) {
+    return isLineInTerrain(start, end, this.entityX, this.entityY);
+  }
+
   getState() {
     return this.state;
   }
 
   getEntitiesState() {
-    if (this.lastStateReadTick != currentTick()) {
-      this.lastStateReadTick = currentTick();
+    if (this.lastStateReadTick != this.engine.tickManager.tick) {
+      this.lastStateReadTick = this.engine.tickManager.tick;
       this.stateRead = [this.state, ...this.terrain];
       this.entities.forEach((entity) => {
         if (entity.health > 0) this.stateRead.push(...entity.getState());
@@ -142,14 +195,19 @@ class A0MonsterPitEntity {
     );
   }
 
+  isCircleInPit(point, radius) {
+    const distance = pointUtils.distance(point, [this.entityX, this.entityY]);
+    return distance < this.radius + radius;
+  }
+
   getDistanceToPlayersInside(point) {
     return this.playersInside
       .map((player) => {
         return {
           player,
           distance: pointUtils.distance(point, [
-            player.entityX,
-            player.entityY,
+            player.position.x,
+            player.position.y,
           ]),
         };
       })
@@ -157,7 +215,13 @@ class A0MonsterPitEntity {
   }
 
   projectPointInto(point) {
-    if (this.isPointInPit(point)) {
+    if (
+      pointUtils.isPointInCircle(
+        point,
+        [this.entityX, this.entityY],
+        this.radius
+      )
+    ) {
       return point;
     }
 

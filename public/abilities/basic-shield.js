@@ -1,4 +1,4 @@
-import { gameWindow } from "../clientState.js";
+import { gameWindow } from "../elements.js";
 class BasicShield {
   constructor() {
     this.cooldown = 1;

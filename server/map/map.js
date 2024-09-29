@@ -1,12 +1,10 @@
-const { pointUtils } = require("./point-utils");
+const pointUtils = require("../point-utils.js");
+const buildMap = require("./map-builder.js");
 
 class Map {
-  constructor() {
+  constructor(engine) {
     this.pits = [];
-  }
-
-  addPit(pit) {
-    this.pits.push(pit);
+    buildMap(engine, this);
   }
 
   getPath(startPoint, endPoint) {
@@ -90,13 +88,14 @@ class Map {
     return { x: pathX, y: pathY };
   }
 
-  checkPitOnPoint(point) {
+  checkPitOnPoint(point, radius) {
     for (let index = 0; index < this.pits.length; index++)
-      if (this.pits[index].isPointInPit(point)) return this.pits[index];
+      if (this.pits[index].isCircleInPit(point, radius))
+        return this.pits[index];
     return null;
   }
 
-  getRelevantPits(point) {
+  getRenderedPits(point) {
     const relevantPits = [];
     for (let index = 0; index < this.pits.length; index++) {
       const distance = pointUtils.distance(point, [
@@ -110,6 +109,5 @@ class Map {
     return relevantPits;
   }
 }
-const map = new Map();
 
-module.exports = { map };
+module.exports = Map;

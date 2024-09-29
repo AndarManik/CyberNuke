@@ -1,4 +1,7 @@
-import { gameWindow } from "../clientState.js";
+import { gameWindow } from "../elements.js";
+import {
+  player,
+} from "../client-state.js";
 class BasicMeleeAttack {
   constructor() {
     this.cooldown = 1;
@@ -41,15 +44,11 @@ class BasicMeleeAttack {
 //This class needs to change so that it doesn't have to read the otherplayers position, rather the
 //server should provide the positions.
 class BasicMeleeAttackEntity {
-  constructor(player, state, otherPlayers, userID) {
+  constructor(state) {
     this.player = player;
 
-    this.caster = state.caster == userID ? player : otherPlayers[state.caster];
-    this.receiver =
-      state.receiver == userID ? player : otherPlayers[state.receiver];
-
-    this.entityX = this.caster.entityX;
-    this.entityY = this.caster.entityY;
+    this.entityX = state.entityX;
+    this.entityY = state.entityY;
     this.direction = state.direction;
 
     this.element = document.createElement("div");
@@ -66,8 +65,8 @@ class BasicMeleeAttackEntity {
   }
 
   setState(state) {
-    this.entityX = this.caster.entityX;
-    this.entityY = this.caster.entityY;
+    this.entityX = state.entityX;
+    this.entityY = state.entityY;
     this.direction = state.direction;
   }
 

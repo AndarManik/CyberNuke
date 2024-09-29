@@ -1,4 +1,4 @@
-import { staticEntities } from "../clientState.js";
+import { staticEntities } from "../elements.js";
 
 class PitEntity {
   constructor(player, state) {

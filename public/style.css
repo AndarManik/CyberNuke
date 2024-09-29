@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'RobotoMono';
+  src: url('/RobotoMono-VariableFont_wght.ttf')
+}
+
 :root {
   --text: #ede7e9;
   --background: hsl(250, 14%, 10%);
@@ -7,12 +12,7 @@
   --basicattack: hsl(15, 65%, 65%);
 }
 
-* {
-  font-family: "Kode Mono", monospace;
-  font-weight: 700;
-}
-
-body {
+body, html {
   margin: 0;
   padding: 0;
   height: 100vh;
@@ -165,4 +165,10 @@ body {
   background-color: var(--basicattack);
   border-radius: 15px;
   position: absolute;
+}
+
+.damage {
+  font-family: "RobotoMono";
+  font-weight: 900;
+  font-size: 1.5rem;
 }

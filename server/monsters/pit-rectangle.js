@@ -1,4 +1,4 @@
-const { pointUtils } = require("../point-utils.js");
+const pointUtils = require("../point-utils.js");
 const { v4: uuidv4 } = require("uuid");
 class PitRectangleEntity {
     constructor(entityX, entityY, width, height, color, rotation = 0) {

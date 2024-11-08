@@ -9,7 +9,7 @@ class Drop {
     style.width = 15;
     style.height = 15;
     style.borderRadius = "15px";
-    style.backgroundColor = "hsl(0, 0%, 65%)";
+    style.backgroundColor = "#a6a0b2";
 
     style.left = 350 - 7.5 + state.entityX;
     style.top = 350 - 7.5 + state.entityY;

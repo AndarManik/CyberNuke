@@ -1,3 +1,4 @@
+// HECTIC: make a total damage which shows along side the regular damage this should stay still above the receiver
 class DamageIndicatorEntity {
   constructor(engine, damageDealt, caster, receiver) {
     this.engine = engine;

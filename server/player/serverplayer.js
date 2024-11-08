@@ -80,7 +80,7 @@ class Player {
   update() {
     if (this.health.current <= 0) this.reset();
 
-    this.health.regen = this.playerHit.timeSince() > 10 ? 0.1 : 0.01;
+    this.health.regen = this.health.max * (this.playerHit.timeSince() > 10 ? 0.1 : 0.01);
 
     this.health.update();
 

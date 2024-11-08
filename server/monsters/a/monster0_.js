@@ -165,7 +165,7 @@ class AMonster0 {
         nearestPlayer.id,
         this.position.x,
         this.position.y,
-        this.pit.color,
+        this.color,
         this
       );
     }
@@ -185,7 +185,9 @@ class AMonster0 {
       entityX: this.position.x,
       entityY: this.position.y,
       id: this.id,
-      color: this.color,
+      bulletColor: this.color.weak.dark,
+      bodyColor: this.color.weak.light,
+      healthColor: this.color.health,
       maxHealth: this.health.max,
       health: this.health.current,
       direction: this.direction.current,

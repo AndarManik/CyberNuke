@@ -13,12 +13,8 @@ class DamageIndicatorEntity {
     style.top = 350 - 7.5;
     style.position = "absolute";
     style.color =
-      state.caster == userID ? "hsl(250, 6%, 85%)" : "hsl(8, 65%, 65%)";
+      state.caster == userID ? "#6b6275" : "oklch(60% 0.125 24)";
     style.zIndex = 5;
-    style.textShadow =
-    state.caster == userID
-      ? "0 0 10px hsl(250, 6%, 75%)"
-      : "0 0 10px hsl(8, 65%, 65%)";
 
     style.fontSize = `${Math.log10(state.damageDealt + 10) * 0.45}rem`;
     this.element.innerText = state.damageDealt;

@@ -60,7 +60,7 @@ class A0Monster1Entity {
     circle3.setAttribute("rx", "10");
     circle3.setAttribute("ry", "15");
 
-    circle3.setAttribute("fill", `hsl(${state.color}, 65%, 65%)`);
+    circle3.setAttribute("fill", `${state.bodyColor}`);
     circle3.setAttribute("mask", `url(#cutout${state.id})`);
     this.svg.appendChild(circle3);
 
@@ -72,7 +72,7 @@ class A0Monster1Entity {
     circle4.setAttribute("cy", "25");
     circle4.setAttribute("r", "5");
 
-    circle4.setAttribute("fill", `hsl(${state.color}, 65%, 65%)`);
+    circle4.setAttribute("fill", `${state.bulletColor}`);
     this.svg.appendChild(circle4);
 
     this.svg.style.position = "absolute";
@@ -84,7 +84,7 @@ class A0Monster1Entity {
 
     this.healthBar = document.createElement("div");
     this.healthBar.classList.add("currentHealth");
-    this.healthBar.style.backgroundColor = "hsl(55, 35%, 45%)";
+    this.healthBar.style.backgroundColor = `${state.healthColor}`;
     this.healthContainer.appendChild(this.healthBar);
 
     this.element.append(this.svg);

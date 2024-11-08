@@ -6,7 +6,7 @@ class RangeAttackEntity {
     this.caster = caster;
     this.receiver = receiver;
 
-    this.values = engine.values.abilities.a.rangeAttack;
+    this.values = engine.values.abilities.basic.rangeAttack;
     this.entity = this.engine.newEntity(this, "dynamic", "global");
 
     this.entityX = this.engine.players.get(this.caster).position.x;
@@ -38,7 +38,7 @@ class RangeAttackEntity {
     this.entityY -= (dy / distBetween) * currentSpeed;
   }
 
-  getState() {
+  getState() {// CALM: this should provide a color
     return {
       type: "basic range attack",
       entityX: this.entityX,

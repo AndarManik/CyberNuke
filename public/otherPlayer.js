@@ -12,7 +12,7 @@ class OtherPlayer {
 
     this.healthBar = document.createElement("div");
     this.healthBar.classList.add("currentHealth");
-    this.healthBar.style.backgroundColor = "hsl(0, 35%, 45%)";
+    this.healthBar.style.backgroundColor = "oklch(70% 0.15 24)";
     this.shieldBar = document.createElement("div");
     this.shieldBar.classList.add("currentShield");
 

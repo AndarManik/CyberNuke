@@ -12,15 +12,17 @@ Map.prototype.map = function (consumer) {
 const Event = require("./event.js");
 const World = require("../map/world.js");
 const Entity = require("./entity.js");
-const values = require("./values.js");
+const getValues = require("./values.js");
 const TickManager = require("./tick.js");
 
 class Engine {
   constructor() {
     this.buildEntityGroups();
-    this.values = values;
+    this.values = getValues();
+    this.colors = this.values.colors
     this.tickManager = new TickManager();
     this.map = new World(this);
+
   }
 
   buildEntityGroups() {

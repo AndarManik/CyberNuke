@@ -63,14 +63,26 @@ class A0MonsterPitEntity {
     this.entityX = entityX;
     this.entityY = entityY;
     this.radius = 125;
-    this.color = color;
+    const random = Math.random();
+    this.color = engine.colors.blue;
+    if(random > 0.20)
+      this.color = engine.colors.green;
+    if(random > 0.40)
+      this.color = engine.colors.yellow;
+    if(random > 0.60)
+      this.color = engine.colors.red;
+    if(random > 0.80)
+      this.color = engine.colors.purple;
+    
     this.lastStateReadTick = 0;
     this.stateRead = [];
     this.playersInside = [];
 
-    this.terrain = terrainEntities.map((terrain) =>
-      terrain.getState(entityX, entityY)
-    );
+    this.terrain = terrainEntities.map((terrain) => {
+      const state = terrain.getState(entityX, entityY);
+      state.color = this.color.terrain;
+      return state;
+    });
 
     this.entities = [];
     this.entities.push(
@@ -111,7 +123,7 @@ class A0MonsterPitEntity {
       maxHealth: this.maxHealth,
       isAlive: this.isAlive,
       radius: this.radius,
-      color: this.color,
+      color: this.color.medium.medium,
     };
   }
 
@@ -127,7 +139,7 @@ class A0MonsterPitEntity {
 
     if (this.health === 0) {
       this.isAlive = false;
-      if(!this.itemsDropped) {
+      if (!this.itemsDropped) {
         console.log("MonsterPit items dropped");
         this.itemsDropped = true;
         this.dropItems();
@@ -141,10 +153,10 @@ class A0MonsterPitEntity {
 
   removeDead() {
     for (let i = 0; i < this.entities.length; i++) {
-        if (!this.entities[i].alive) {
-            this.entities.splice(i, 1);
-            i--;  // decrement i to adjust index after splice
-        }
+      if (!this.entities[i].alive) {
+        this.entities.splice(i, 1);
+        i--; // decrement i to adjust index after splice
+      }
     }
   }
 

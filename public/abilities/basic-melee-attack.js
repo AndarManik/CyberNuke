@@ -10,8 +10,8 @@ class BasicMeleeAttack {
     this.element.style.width = this.castRange;
     this.element.style.height = this.castRange;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "hsla(60, 65%, 65%, 0.05)";
-    this.element.style.border = "1px solid hsla(60, 65%, 65%, 0.1)";
+    this.element.style.backgroundColor = "oklch(60% 0.125 96 / 0.05)";
+    this.element.style.border = "1px solid oklch(60% 0.125 96 / 0.1)";
 
     this.element.style.left = 350 - this.castRange;
     this.element.style.top = 350 - this.castRange;
@@ -53,7 +53,7 @@ class BasicMeleeAttackEntity {
     const style = this.element.style;
     style.width = 15;
     style.height = 50;
-    style.backgroundColor = "hsl(60, 65%, 65%)";
+    style.backgroundColor = "oklch(70% 0.15 96)";
 
     style.left = 350 - 7.5;
     style.top = 350 - 25;

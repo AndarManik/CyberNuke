@@ -15,9 +15,9 @@ class PitEntity {
     style.top = 350 + state.entityY - state.radius;
     style.borderRadius = state.radius + "px";
     style.position = "absolute";
-    style.backgroundColor = `hsla(${state.color}, 20%, 45%, 0.05)`;
-    style.border = `1px solid hsla(${state.color}, 20%, 45%, 0.2)`
-    style.boxShadow = `inset 0 0 5px 1px hsla(${state.color}, 20%, 45%,0.2)`;
+    style.backgroundColor = `${state.color.replace(")", "/ 0.05")}`;
+    style.border = `1px solid ${state.color.replace(")", "/ 0.075")}`
+    style.boxShadow = `inset 0 0 5px 1px ${state.color.replace(")", "/ 0.02")}`;
     style.zIndex = 2;
 
     this.healthContainer = document.createElement("div");
@@ -26,7 +26,7 @@ class PitEntity {
     this.healthContainer.style.top = 300 + state.entityY - state.radius;
     this.healthBar = document.createElement("div");
     this.healthBar.classList.add("currentHealthPit");
-    this.healthBar.style.backgroundColor = `hsl(${state.color}, 35%, 45%)`;
+    this.healthBar.style.backgroundColor = `${state.color.replace("60%", "70%").replace("0.125", "0.15")}`;
     this.healthContainer.appendChild(this.healthBar);
 
 

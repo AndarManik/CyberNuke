@@ -4,7 +4,7 @@ class MeleeAttack {
   constructor(engine, caster) {
     this.engine = engine;
     this.caster = caster;
-    this.values = engine.values.abilities.a.meleeAttack;
+    this.values = engine.values.abilities.basic.meleeAttack;
 
     this.lastUse = this.engine.newEvent();
 

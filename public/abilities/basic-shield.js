@@ -7,8 +7,8 @@ class BasicShield {
     this.element.style.width = this.castRange - 2;
     this.element.style.height = this.castRange - 2;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "hsla(220, 65%, 65%, 0.05)";
-    this.element.style.border = "1px solid hsla(220, 65%, 65%, 0.1)";
+    this.element.style.backgroundColor = "oklch(60% 0.125 216 / 0.05)";
+    this.element.style.border = "1px solid oklch(60% 0.125 216 / 0.1)";
 
     this.element.style.left = 350 - this.castRange/2;
     this.element.style.top = 350 - this.castRange/2;
@@ -51,7 +51,7 @@ class BasicShieldEntity {
     style.width = 40;
     style.height = 40;
     style.borderRadius = "40px";
-    style.backgroundColor = "hsl(220, 65%, 65%)";
+    style.backgroundColor = "oklch(70% 0.15 216)";
 
     style.left = 350 - 20;
     style.top = 350 - 20;

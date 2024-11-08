@@ -11,7 +11,7 @@ class PitRectangleEntity {
     style.left = 350 + state.entityX - state.width / 2;
     style.top = 350 + state.entityY - state.height / 2;
     style.position = "absolute";
-    style.backgroundColor = `hsl(${state.color}, 15%, 45%)`;
+    style.backgroundColor = `${state.color}`;
     style.transform = `rotate(${state.rotation}deg)`;
 
     staticEntities.append(this.element);

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Color Rings</title>
+    <style>
+      body {
+        background-color: #dfdde4;
+      }
+      .high,
+      .mid,
+      .low {
+        border-radius: 500px;
+        width: 150px;
+        height: 150px;
+        margin-bottom: 60px;
+        margin-left: -30px;
+      }
+      .high {
+        background-color: oklch(70% 0.15 var(--hue));
+      }
+      .mid {
+        background-color: oklch(60% 0.125 var(--hue));
+      }
+      .low {
+        background-color: oklch(50% 0.1 var(--hue));
+      }
+      .high:hover::after,.mid:hover::after,.low:hover::after {
+        content: attr(style);
+        position: absolute;
+        padding: 5px;
+        border: 1px solid #000;
+        background-color: #fff;
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const numberOfColors = 15;
+        const hues = [];
+
+        for (let index = 0; index < numberOfColors; index++) {
+          hues.push((360 * index) / numberOfColors);
+        }
+
+        const parent = document.createElement("div");
+        parent.style.display = "flex";
+        parent.style.flexWrap = "wrap";
+        parent.style.marginLeft = "90px";
+
+        hues.forEach((hue) => {
+          const highDiv = document.createElement("div");
+          highDiv.className = "high";
+          highDiv.style.setProperty("--hue", hue);
+
+          const midDiv = document.createElement("div");
+          midDiv.className = "mid";
+          midDiv.style.setProperty("--hue", hue);
+
+          const lowDiv = document.createElement("div");
+          lowDiv.className = "low";
+          lowDiv.style.setProperty("--hue", hue);
+
+          parent.appendChild(lowDiv);
+          parent.appendChild(midDiv);
+          parent.appendChild(highDiv);
+        });
+
+        document.body.appendChild(parent);
+      });
+    </script>
+  </body>
+</html>

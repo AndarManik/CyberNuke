@@ -67,7 +67,7 @@ class AMonsterBullet {
       entityX: this.entityX,
       entityY: this.entityY,
       id: this.id,
-      color: this.color,
+      color: this.color.weak.dark,
     };
   }
 }

@@ -5,7 +5,7 @@ class MeleeAttackEntity {
     this.engine = engine;
     this.caster = caster;
     this.receiver = receiver;
-    this.values = engine.values.abilities.a.meleeAttack;
+    this.values = engine.values.abilities.basic.meleeAttack;
     this.entity = this.engine.newEntity(this, "dynamic", "global");
 
 

@@ -12,7 +12,7 @@ class Health {
   update() {
     this.current = Math.min(
       this.max,
-      this.current + this.regen * this.max * this.engine.getDelta()
+      this.current + this.regen * this.engine.getDelta()
     );
   }
 

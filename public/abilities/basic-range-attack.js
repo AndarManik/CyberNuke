@@ -4,7 +4,7 @@ import {
   getUserId,
 } from "../client-state.js";
 import { gameWindow } from "../elements.js";
-class BasicRangeAttack {
+class BasicRangeAttack { //HECTIC: I want to send the cast indicators from the server instead of it being stored on the client.
   constructor() {
     this.cooldown = 1;
     this.castRange = 400;
@@ -12,9 +12,9 @@ class BasicRangeAttack {
     this.element.style.width = this.castRange;
     this.element.style.height = this.castRange;
     this.element.style.borderRadius = this.castRange + "px";
-    this.element.style.backgroundColor = "hsla(0, 65%, 65%, 0.05)";
+    this.element.style.backgroundColor = "oklch(60% 0.125 24 / 0.05)";
 
-    this.element.style.border = "1px solid hsla(0, 65%, 65%, 0.1)";
+    this.element.style.border = "1px solid oklch(60% 0.125 24 / 0.1)";
 
     this.element.style.left = 350 - this.castRange / 2;
     this.element.style.top = 350 - this.castRange / 2;
@@ -61,7 +61,7 @@ class BasicRangeAttackEntity {
     this.element = document.createElement("div");
     this.element.style.height = "10px";
     this.element.style.width = "10px";
-    this.element.style.backgroundColor = "hsl(0, 65%, 65%)";
+    this.element.style.backgroundColor = "oklch(70% 0.15 24)";
 
     this.element.style.borderRadius = "15px";
     this.element.style.position = "absolute";

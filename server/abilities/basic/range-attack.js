@@ -6,7 +6,7 @@ class RangeAttack {
   constructor(engine, caster) {
     this.engine = engine;
     this.caster = caster;
-    this.values = engine.values.abilities.a.rangeAttack;
+    this.values = engine.values.abilities.basic.rangeAttack;
 
     this.target = new Target(
       this.caster.position,

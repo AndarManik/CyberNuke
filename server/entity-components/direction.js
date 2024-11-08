@@ -5,6 +5,7 @@ class Direction {
     this.speed = speed || 0;
     this.current = direction || 0;
     this.desire = direction || 0;
+    this.start = this.current;
   }
 
   update() {
@@ -23,6 +24,10 @@ class Direction {
     }
 
     this.current += (difference > 0) ? rotation : -rotation; 
+  }
+
+  turnToStart() {
+    this.desire = this.start;
   }
 
   turnTo(startX, startY, endX, endY) {

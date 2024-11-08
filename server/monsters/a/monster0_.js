@@ -65,12 +65,7 @@ class AMonster0 {
 
     if (this.position.isAtStart() && this.health.isFull()) {
       this.firstShot = true;
-      this.direction.turnTo(
-        this.position.x,
-        this.position.y,
-        this.position.x,
-        this.position.y
-      );
+      this.direction.turnToStart();
       return;
     }
 
@@ -85,6 +80,8 @@ class AMonster0 {
       this.path.pathX[0],
       this.path.pathY[0]
     );
+
+    if (this.position.isAtStart()) this.direction.turnToStart();
     this.health.update();
   }
 

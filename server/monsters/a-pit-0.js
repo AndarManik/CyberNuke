@@ -3,6 +3,7 @@ const { PitRectangleEntity } = require("./pit-rectangle.js");
 const { v4: uuidv4 } = require("uuid");
 const AMonster0 = require("./a/monster0_.js");
 const AMonster1 = require("./a/monster1_.js");
+const MeleeAttackDrop = require("../abilities/basic/melee-attack-drop.js");
 
 const color = 210;
 
@@ -58,7 +59,7 @@ function isLineInTerrain(start, end, entityX, entityY) {
 class A0MonsterPitEntity {
   constructor(engine, entityX, entityY) {
     this.engine = engine;
-    this.id = uuidv4();
+    this.entity = this.engine.newEntity(this, "dynamic");
     this.entityX = entityX;
     this.entityY = entityY;
     this.radius = 125;
@@ -76,61 +77,75 @@ class A0MonsterPitEntity {
       new AMonster1(engine, this, this.entityX, this.entityY, 1)
     );
     this.entities.push(
-      new AMonster1(
-        engine,
-        this,
-        this.entityX + 25,
-        this.entityY + 25,
-        2
-      )
+      new AMonster1(engine, this, this.entityX + 25, this.entityY + 25, 2)
     );
     this.entities.push(
-      new AMonster0(
-        engine,
-        this,
-        this.entityX - 25,
-        this.entityY + 25,
-        3
-      )
+      new AMonster0(engine, this, this.entityX - 25, this.entityY + 25, 3)
     );
 
     this.entities.push(
-      new AMonster0(
-        engine,
-        this,
-        this.entityX + 25,
-        this.entityY - 25,
-        4
-      )
+      new AMonster0(engine, this, this.entityX + 25, this.entityY - 25, 4)
     );
     this.entities.push(
-      new AMonster1(
-        engine,
-        this,
-        this.entityX - 25,
-        this.entityY - 25,
-        5
-      )
+      new AMonster1(engine, this, this.entityX - 25, this.entityY - 25, 5)
     );
 
     this.entities.push(
-      new AMonster0(
-        engine,
-        this,
-        this.entityX - 25,
-        this.entityY - 25,
-        6
-      )
+      new AMonster0(engine, this, this.entityX - 25, this.entityY - 25, 6)
     );
+
+    this.maxHealth = this.entities.reduce(
+      (sum, entity) => sum + entity.health.max,
+      0
+    );
+    this.health = this.maxHealth;
+    this.isAlive = true;
+    this.itemsDropped = false;
 
     this.state = {
       type: "pit",
       id: this.id,
       entityX: this.entityX,
       entityY: this.entityY,
+      health: this.health,
+      maxHealth: this.maxHealth,
+      isAlive: this.isAlive,
       radius: this.radius,
       color: this.color,
     };
+  }
+
+  //MAYHEM: add dropping the items after the pit is finished.
+
+  update() {
+    this.entities.forEach((entity) => entity.update());
+    this.removeDead();
+    this.health = this.entities.reduce(
+      (sum, entity) => sum + entity.health.current,
+      0
+    );
+
+    if (this.health === 0) {
+      this.isAlive = false;
+      if(!this.itemsDropped) {
+        console.log("MonsterPit items dropped");
+        this.itemsDropped = true;
+        this.dropItems();
+      }
+    }
+  }
+
+  dropItems() {
+    new MeleeAttackDrop(this.engine, this.entityX, this.entityY);
+  }
+
+  removeDead() {
+    for (let i = 0; i < this.entities.length; i++) {
+        if (!this.entities[i].alive) {
+            this.entities.splice(i, 1);
+            i--;  // decrement i to adjust index after splice
+        }
+    }
   }
 
   addPlayer(player) {
@@ -154,15 +169,18 @@ class A0MonsterPitEntity {
   }
 
   getState() {
+    this.state.health = this.health;
+    this.state.maxHealth = this.maxHealth;
+    this.state.isAlive = this.isAlive;
     return this.state;
   }
 
   getEntitiesState() {
     if (this.lastStateReadTick != this.engine.tickManager.tick) {
       this.lastStateReadTick = this.engine.tickManager.tick;
-      this.stateRead = [this.state, ...this.terrain];
+      this.stateRead = [this.getState(), ...this.terrain];
       this.entities.forEach((entity) => {
-        if (entity.health > 0) this.stateRead.push(...entity.getState());
+        this.stateRead.push(...entity.getState());
       });
     }
 

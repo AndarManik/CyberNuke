@@ -41,11 +41,9 @@ class BasicMeleeAttack {
     this.element.style.display = "none";
   }
 }
-//This class needs to change so that it doesn't have to read the otherplayers position, rather the
-//server should provide the positions.
+
 class BasicMeleeAttackEntity {
   constructor(state) {
-    this.player = player;
 
     this.entityX = state.entityX;
     this.entityY = state.entityY;
@@ -72,8 +70,8 @@ class BasicMeleeAttackEntity {
 
   render() {
     this.element.style.transform = `translate(${
-      this.entityX - this.player.entityX + Math.sin(this.direction) * 25
-    }px, ${this.entityY - this.player.entityY + Math.cos(this.direction) * -25}px) rotate(${57.3 * this.direction}deg)`;
+      this.entityX - player.entityX + Math.sin(this.direction) * 25
+    }px, ${this.entityY - player.entityY + Math.cos(this.direction) * -25}px) rotate(${57.3 * this.direction}deg)`;
   }
 
   remove() {

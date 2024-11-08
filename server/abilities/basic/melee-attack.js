@@ -4,15 +4,14 @@ class MeleeAttack {
   constructor(engine, caster) {
     this.engine = engine;
     this.caster = caster;
-    this.cooldown = 4;
-    this.castRange = 50;
+    this.values = engine.values.abilities.a.meleeAttack;
 
     this.lastUse = this.engine.newEvent();
 
     this.target = new Target(
       this.caster.position,
       this.caster.radius,
-      this.castRange,
+      this.values.castRange,
       this.engine.targetable
     );
   }
@@ -20,7 +19,7 @@ class MeleeAttack {
   update() {}
 
   use() {
-    if (this.lastUse.timeSince() < this.cooldown) return;
+    if (this.lastUse.timeSince() < this.values.cooldown) return;
 
     const targetedEntity = this.target.point([
       this.caster.position.x + this.caster.mouseX,
@@ -35,8 +34,8 @@ class MeleeAttack {
 
   getState() {
     return {
-      cooldown: Math.min(1, this.lastUse.timeSince() / this.cooldown),
-      castRange: this.castRange,
+      cooldown: Math.min(1, this.lastUse.timeSince() / this.values.cooldown),
+      castRange: this.values.castRange,
     };
   }
 }

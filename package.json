@@ -6,7 +6,8 @@
     "server": "nodemon server/server",
     "test": "jest",
     "test:watch": "nodemon --exec npm test",
-    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "dot": "nodemon test/scratch"
   },
   "keywords": [],
   "author": "",

@@ -5,11 +5,9 @@ class MeleeAttackEntity {
     this.engine = engine;
     this.caster = caster;
     this.receiver = receiver;
-
+    this.values = engine.values.abilities.a.meleeAttack;
     this.entity = this.engine.newEntity(this, "dynamic", "global");
 
-    this.timeToHit = 0.1;
-    this.startTime = this.engine.newEvent();
 
     this.direction = Math.atan2(
       this.engine.targetable.get(this.receiver).position.x -
@@ -18,7 +16,9 @@ class MeleeAttackEntity {
         (this.engine.targetable.get(this.receiver).position.y -
           this.engine.players.get(this.caster).position.y)
     );
-    this.damage = 100;
+
+    this.startTime = this.engine.newEvent();
+
   }
 
   update() {
@@ -27,11 +27,11 @@ class MeleeAttackEntity {
       return;
     }
 
-    if (this.startTime.timeSince() >= this.timeToHit) {
-      this.engine.targetable.get(this.receiver).takeDamage(this.damage); //This will need to change to utilize a damage exchange method
+    if (this.startTime.timeSince() >= this.values.timeToHit) {
+      this.engine.targetable.get(this.receiver).takeDamage(this.values.damage); //This will need to change to utilize a damage exchange method
       new DamageIndicatorEntity(
         this.engine,
-        this.damage,
+        this.values.damage,
         this.caster,
         this.receiver
       );

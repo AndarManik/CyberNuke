@@ -6,12 +6,11 @@ class RangeAttackEntity {
     this.caster = caster;
     this.receiver = receiver;
 
+    this.values = engine.values.abilities.a.rangeAttack;
     this.entity = this.engine.newEntity(this, "dynamic", "global");
 
     this.entityX = this.engine.players.get(this.caster).position.x;
     this.entityY = this.engine.players.get(this.caster).position.y;
-    this.damage = 60;
-    this.movespeed = 450;
   }
 
   update() {
@@ -20,7 +19,7 @@ class RangeAttackEntity {
       return;
     }
 
-    const currentSpeed = this.movespeed * this.engine.getDelta();
+    const currentSpeed = this.values.movespeed * this.engine.getDelta();
 
     const dx =
       this.entityX - this.engine.targetable.get(this.receiver).position.x;
@@ -29,8 +28,8 @@ class RangeAttackEntity {
     const distBetween = Math.sqrt(dx * dx + dy * dy);
     if (distBetween <= currentSpeed) {
       if (this.engine.targetable.has(this.receiver)) {
-        this.engine.targetable.get(this.receiver).takeDamage(this.damage);
-        new DamageIndicatorEntity(this.engine, this.damage, this.caster, this.receiver);
+        this.engine.targetable.get(this.receiver).takeDamage(this.values.damage);
+        new DamageIndicatorEntity(this.engine, this.values.damage, this.caster, this.receiver);
       }
       this.entity.remove();
       return;

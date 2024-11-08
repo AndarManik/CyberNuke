@@ -4,17 +4,19 @@ const {
   Path,
   Radius,
   Target,
+  Health,
 } = require("../../entity-components/components.js");
 const AMonsterBullet = require("./monster0_bullet.js");
 
 class AMonster0 {
   constructor(engine, pit, entityX, entityY, pathId) {
     this.engine = engine;
-    this.entity = this.engine.newEntity(this, "dynamic", "targetable");
+    this.entity = this.engine.newEntity(this, "targetable");
 
     this.range = 250;
 
     this.pit = pit;
+    this.health = new Health(engine, 300, 100);
     this.position = new Position(entityX, entityY);
     this.radius = new Radius(10);
     this.path = new Path(this.engine, this.position, 80, pit);
@@ -30,8 +32,6 @@ class AMonster0 {
     this.pathDevY = Math.sin(2.39 * pathId) * 3;
 
     this.color = pit.color;
-    this.maxHealth = 300;
-    this.health = 300;
 
     this.bullet = null;
 
@@ -41,10 +41,15 @@ class AMonster0 {
     this.bulletShot = false;
     this.lastShot = this.engine.newEvent();
     this.firstShot = true;
+
+    this.alive = true;
   }
 
   update() {
-    if (this.health == 0) this.entity.remove();
+    if (this.health.isZero()) {
+      this.entity.remove();
+      this.alive = false;
+    }
     this.state();
     this.path.isMoving = true;
     this.path.update();
@@ -58,7 +63,7 @@ class AMonster0 {
       return;
     }
 
-    if (this.position.isAtStart() && this.health == this.maxHealth) {
+    if (this.position.isAtStart() && this.health.isFull()) {
       this.firstShot = true;
       this.direction.turnTo(
         this.position.x,
@@ -80,7 +85,7 @@ class AMonster0 {
       this.path.pathX[0],
       this.path.pathY[0]
     );
-    this.health = Math.min(this.maxHealth, this.health + 100 / 60);
+    this.health.update();
   }
 
   active() {
@@ -181,8 +186,8 @@ class AMonster0 {
       entityY: this.position.y,
       id: this.id,
       color: this.color,
-      maxHealth: this.maxHealth,
-      health: this.health,
+      maxHealth: this.health.max,
+      health: this.health.current,
       direction: this.direction.current,
     });
     if (this.bullet) state.push(this.bullet.getState());
@@ -190,7 +195,7 @@ class AMonster0 {
   }
 
   takeDamage(amount) {
-    this.health = Math.max(0, this.health - amount);
+    this.health.takeDamage(amount);
   }
 }
 

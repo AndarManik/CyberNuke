@@ -5,6 +5,7 @@ const {
   Path,
   Radius,
   Target,
+  Health
 } = require("../../entity-components/components.js");
 const pointUtils = require("../../point-utils.js");
 
@@ -12,11 +13,12 @@ class AMonster1 {
   constructor(engine, pit, entityX, entityY, pathId) {
     this.engine = engine;
 
-    this.entity = this.engine.newEntity(this, "dynamic", "targetable");
+    this.entity = this.engine.newEntity(this, "targetable");
 
     this.range = 250;
 
     this.pit = pit;
+    this.health = new Health(engine, 500, 100)
     this.position = new Position(entityX, entityY);
     this.radius = new Radius(15);
     this.path = new Path(this.engine, this.position, 80, pit);
@@ -32,8 +34,6 @@ class AMonster1 {
     this.pathDevY = Math.sin(2.39 * pathId) * 3;
 
     this.color = pit.color;
-    this.maxHealth = 500;
-    this.health = 500;
 
     this.damage = 50;
     this.dashSpeed = 400;
@@ -42,11 +42,14 @@ class AMonster1 {
     this.walkingBackStarted = false;
     this.lastDash = this.engine.newEvent();
     this.firstDash = true;
+    this.alive = true;
   }
 
   update() {
-    if (this.health == 0) {
+    //HECTIC: this behavior needs to include a vision check. Perhaps wait until the new pathing engine is done
+    if (this.health.isZero()) {
       this.entity.remove();
+      this.alive = false;
     }
     this.state();
 
@@ -54,6 +57,7 @@ class AMonster1 {
     this.path.update();
 
     this.direction.update();
+
   }
 
   walkingBack() {
@@ -63,7 +67,7 @@ class AMonster1 {
       return;
     }
 
-    if (this.position.isAtStart() && this.health == this.maxHealth) {
+    if (this.position.isAtStart() && this.health.isFull()) {
       this.firstDash = true;
       this.direction.turnTo(
         this.position.x,
@@ -85,7 +89,8 @@ class AMonster1 {
       this.path.pathX[0],
       this.path.pathY[0]
     );
-    this.health = Math.min(this.maxHealth, this.health + 100 / 60);
+
+    this.health.update();
   }
 
   active() {
@@ -216,15 +221,15 @@ class AMonster1 {
         entityY: this.position.y,
         id: this.id,
         color: this.color,
-        maxHealth: this.maxHealth,
-        health: this.health,
+        maxHealth: this.health.max,
+        health: this.health.current,
         direction: this.direction.current,
       },
     ];
   }
 
   takeDamage(amount) {
-    this.health = Math.max(0, this.health - amount);
+    this.health.takeDamage(amount);
   }
 }
 

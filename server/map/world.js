@@ -1,7 +1,7 @@
 const pointUtils = require("../point-utils.js");
 const buildMap = require("./map-builder.js");
 
-class Map {
+class World {
   constructor(engine) {
     this.pits = [];
     buildMap(engine, this);
@@ -95,6 +95,7 @@ class Map {
     return null;
   }
 
+  //HECTIC: this should be optimized with a quad-tree/grid index to get pits to render
   getRenderedPits(point) {
     const relevantPits = [];
     for (let index = 0; index < this.pits.length; index++) {
@@ -110,4 +111,4 @@ class Map {
   }
 }
 
-module.exports = Map;
+module.exports = World;

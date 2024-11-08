@@ -5,7 +5,7 @@ class Health {
     this.current = maxHealth;
     this.max = maxHealth;
     this.originalMax = maxHealth;
-    this.regen = regen || 0.0;
+    this.regen = regen || 0.0; //in hp/s
     this.multipliers = {};
   }
 
@@ -28,6 +28,14 @@ class Health {
     const remain = -this.current;
     this.current = 0;
     return remain;
+  }
+
+  isZero(){
+    return this.current <= 0;
+  }
+
+  isFull() {
+    return this.current === this.max;
   }
 
   addMultiplier(multiplier, id) {

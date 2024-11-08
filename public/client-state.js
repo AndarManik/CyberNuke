@@ -12,6 +12,7 @@ import {
   A0Monster0EntityAbility,
 } from "./monsters/a0-monster-0c.js";
 import { A0Monster1Entity } from "./monsters/a0-monster-1c.js";
+import { Drop } from "./abilities/drop.js";
 
 const entities = {};
 const otherPlayers = {};
@@ -82,6 +83,9 @@ function updateState(message, socket) {
           break;
         case "rectangle":
           entities[entityData.id] = new PitRectangleEntity(player, entityData);
+          break;
+        case "drop":
+          entities[entityData.id] = new Drop(entityData);
           break;
       }
     }

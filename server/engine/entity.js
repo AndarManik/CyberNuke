@@ -7,8 +7,7 @@ class Entity {
     this.groups = [];
 
     entity.id = uuid();
-    this.engine.all.set(entity.id, entity);
-    this.addGroup(...groups);
+    this.addGroup(...groups, "all");
   }
 
   addGroup(...groups) {
@@ -16,6 +15,7 @@ class Entity {
     groups.forEach((group) => this.engine[group].set(this.entity.id, this.entity));
     return this;
   }
+  
   removeGroup(...groups) {
     this.groups.filter(group => !groups.includes(group));
     groups.forEach((group) => this.engine[group].delete(this.entity.id));

@@ -6,23 +6,22 @@ class RangeAttack {
   constructor(engine, caster) {
     this.engine = engine;
     this.caster = caster;
-    this.cooldown = 3;
-    this.castRange = 100;
-
-    this.lastUse = this.engine.newEvent();
+    this.values = engine.values.abilities.a.rangeAttack;
 
     this.target = new Target(
       this.caster.position,
       this.caster.radius,
-      this.castRange,
+      this.values.castRange,
       this.engine.targetable
     );
+
+    this.lastUse = this.engine.newEvent();
   }
 
   update() {}
 
   use() {
-    if (this.lastUse.timeSince() < this.cooldown) return;
+    if (this.lastUse.timeSince() < this.values.cooldown) return;
     
     const trueMouseX = this.caster.position.x + this.caster.mouseX;
     const trueMouseY = this.caster.position.y + this.caster.mouseY;
@@ -35,8 +34,8 @@ class RangeAttack {
 
   getState() {
     return {
-      cooldown: Math.min(1, this.lastUse.timeSince() / this.cooldown),
-      castRange: this.castRange,
+      cooldown: Math.min(1, this.lastUse.timeSince() / this.values.cooldown),
+      castRange: this.values.castRange,
     };
   }
 }

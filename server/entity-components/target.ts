@@ -1,7 +1,20 @@
+import { Targeted } from "../engine/entity";
+import Position from "./position";
+import Radius from "./radius";
+
 const pointUtils = require("../point-utils");
 
 class Target {
-  constructor(position, radius, range, targetableList) {
+  position: Position;
+  radius: Radius;
+  range: number;
+  targetableList: Targeted[];
+  constructor(
+    position: Position,
+    radius: Radius,
+    range: number,
+    targetableList: Targeted[]
+  ) {
     this.position = position;
     this.radius = radius;
     this.range = range;
@@ -36,7 +49,7 @@ class Target {
     return sortedTargetable[0];
   }
 
-  point(selectionPoint) {
+  point(selectionPoint: [number, number]) {
     const sortedTargetable = this.targetableList
       .map((targetable) => {
         return {
@@ -73,4 +86,4 @@ class Target {
   }
 }
 
-module.exports = { Target };
+export default Target;

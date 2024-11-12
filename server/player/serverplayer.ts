@@ -1,31 +1,90 @@
-const { RangeAttack, MeleeAttack, SelfShield } = require("../abilities/basic.js");
-const {
-  Health,
-  Shield,
-  Position,
-  Path,
-  Radius,
-} = require("../entity-components/components.js");
+import { Dynamic, Targeted } from "../engine/entity";
+import Engine from "../engine/engine";
+import Position from "../entity-components/position";
+import Radius from "../entity-components/radius";
+import Path from "../entity-components/path";
+import Health from "../entity-components/health";
+import Shield from "../entity-components/shield";
+import Ability from "../abilities/ability";
+import Pit from "../map/pit";
+import Event from "../engine/event";
+import WebSocket from "ws";
 
-class Player {
-  constructor(engine, ws) {
+const {
+  RangeAttack,
+  MeleeAttack,
+  SelfShield,
+} = require("../abilities/basic.js");
+
+type Input = {
+  mouseDown: boolean;
+  mouseX: number;
+  mouseY: number;
+  actions: {
+    s: any;
+    q: number;
+    w: number;
+    e: number;
+  };
+  actionsUse: {
+    q: any;
+    w: any;
+    e: any;
+  };
+};
+
+class Player implements Targeted, Dynamic {
+  id: string;
+  engine: Engine;
+  ws: WebSocket;
+  position: Position;
+  radius: Radius;
+  path: Path;
+  health: Health;
+  shield: Shield;
+  mouseX: number;
+  mouseY: number;
+  prevMouseDown: boolean;
+  mouseDown: boolean;
+  actions: {
+    q: number;
+    w: number;
+    e: number;
+    s: number;
+  };
+  actionsUse: {
+    q: number;
+    w: number;
+    e: number;
+    s: number;
+  };
+  abilities: {
+    q: Ability;
+    w: Ability;
+    e: Ability;
+  };
+  currentPit: Pit | null;
+  renderedPits: Pit[];
+  playerHit: Event;
+
+  constructor(engine: Engine, ws: WebSocket) {
     this.engine = engine;
+    this.engine.registerEntity(this);
+    this.engine.registerPlayer(this);
+    this.engine.registerDynamic(this);
+    this.engine.registerTargeted(this);
+
     this.ws = ws;
-    this.entity = this.engine.newEntity(
-      this,
-      "players",
-      "targetable",
-      "dynamic"
-    );
 
     this.position = new Position(100, 100);
     this.radius = new Radius(10);
     this.path = new Path(this.engine, this.position, 100, this.engine.map);
     this.health = new Health(this.engine, 1000, 0.01);
     this.shield = new Shield();
-
+    // CALM: put these in a CLASS or interface or something mainly class
     this.mouseX = 0;
     this.mouseY = 0;
+    this.prevMouseDown = false;
     this.mouseDown = false;
 
     this.actions = { q: 0, w: 0, e: 0, s: 0 };
@@ -43,17 +102,18 @@ class Player {
     this.playerHit = this.engine.newEvent();
   }
 
-  setInput(input) {
-    if (!this.mouseDown && input.mouseDown) this.path.isMoving = true;
+  setInput(input: Input) {
+    this.prevMouseDown = this.mouseDown;
+    this.mouseDown = input.mouseDown;
+    this.mouseX = input.mouseX;
+    this.mouseY = input.mouseY;
 
     this.actions = input.actions;
     this.actionsUse.q = input.actionsUse.q ? 1 : this.actionsUse.q;
     this.actionsUse.w = input.actionsUse.w ? 1 : this.actionsUse.w;
     this.actionsUse.e = input.actionsUse.e ? 1 : this.actionsUse.e;
 
-    this.mouseX = input.mouseX;
-    this.mouseY = input.mouseY;
-    this.mouseDown = input.mouseDown;
+    if (this.prevMouseDown && this.mouseDown) this.path.isMoving = true;
 
     if (input.actions.s) {
       this.path.isMoving = false;
@@ -80,7 +140,8 @@ class Player {
   update() {
     if (this.health.current <= 0) this.reset();
 
-    this.health.regen = this.health.max * (this.playerHit.timeSince() > 10 ? 0.1 : 0.01);
+    this.health.regen =
+      this.health.max * (this.playerHit.timeSince() > 10 ? 0.1 : 0.01);
 
     this.health.update();
 
@@ -125,7 +186,7 @@ class Player {
     ]);
   }
 
-  sendPlayerTick(players, globalData) {
+  sendPlayerTick(players: object[], globalData: object[]) {
     const entities = [...globalData];
     for (let index = 0; index < this.renderedPits.length; index++)
       entities.push(...this.renderedPits[index].getEntitiesState());
@@ -146,7 +207,7 @@ class Player {
     this.path.reset();
   }
 
-  takeDamage(amount) {
+  takeDamage(amount: number) {
     const initialAmount = amount;
     amount = this.shield.takeDamage(amount);
     this.health.takeDamage(amount);
@@ -155,19 +216,18 @@ class Player {
   }
 
   delete() {
-    this.entity
-      .removeGroup("players", "targetable", "dynamic")
-      .addGroup("playerGraveyard");
+    this.engine.removeGroups(this).registerPlayerGraveyard(this);
     if (this.currentPit) this.currentPit.removePlayer(this);
   }
 
-  rejoin(ws) {
+  rejoin(ws: WebSocket) {
     this.ws = ws;
-    this.entity
-      .addGroup("players", "targetable", "dynamic")
-      .removeGroup("playerGraveyard");
+    this.engine.removeGroups(this);
+    this.engine.registerPlayer(this);
+    this.engine.registerDynamic(this);
+    this.engine.registerTargeted(this);
     if (this.currentPit) this.currentPit.addPlayer(this);
   }
 }
 
-module.exports = { Player };
+export default Player;

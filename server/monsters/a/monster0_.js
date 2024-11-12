@@ -1,21 +1,19 @@
-const {
-  Direction,
-  Position,
-  Path,
-  Radius,
-  Target,
-  Health,
-} = require("../../entity-components/components.js");
 const AMonsterBullet = require("./monster0_bullet.js");
+
+import Direction from "../../entity-components/direction";
+import Health from "../../entity-components/health";
+import Path from "../../entity-components/path";
+import Position from "../../entity-components/position";
+import Radius from "../../entity-components/radius";
+import Target from "../../entity-components/target";
 
 class AMonster0 {
   constructor(engine, pit, entityX, entityY, pathId) {
     this.engine = engine;
+    this.pit = pit;
+
     this.entity = this.engine.newEntity(this, "targetable");
 
-    this.range = 250;
-
-    this.pit = pit;
     this.health = new Health(engine, 300, 100);
     this.position = new Position(entityX, entityY);
     this.radius = new Radius(10);
@@ -24,46 +22,48 @@ class AMonster0 {
     this.target = new Target(
       this.position,
       this.radius,
-      this.range,
+      250,
       pit.playersInside
     );
 
-    this.pathDevX = Math.cos(2.39 * pathId) * 3; //This is a random bias for the entity direction it makes them move in different place without much work. Can look silly.
-    this.pathDevY = Math.sin(2.39 * pathId) * 3;
-
     this.color = pit.color;
 
+    this.pathDevX = Math.cos(2.39 * pathId) * 3; //This is a random bias for the entity direction it makes them move in different place without much work. Can look silly.
+    this.pathDevY = Math.sin(2.39 * pathId) * 3;
     this.bullet = null;
-
-    this.state = this.walkingBack;
-    this.walkingBackStarted = false;
-    this.shootingStarted = false;
-    this.bulletShot = false;
     this.lastShot = this.engine.newEvent();
+    this.bulletShot = false;
     this.firstShot = true;
-
     this.alive = true;
+
+    this.behavior = this.walkingBack;
   }
 
   update() {
-    if (this.health.isZero()) {
-      this.entity.remove();
-      this.alive = false;
-    }
-    this.state();
+    this.removeIfDead();
+    this.behavior();
     this.path.isMoving = true;
     this.path.update();
     this.direction.update();
   }
 
+  removeIfDead() {
+    if (this.health.isZero()) {
+      this.entity.remove();
+      this.alive = false;
+    }
+  }
+
   walkingBack() {
-    if (this.pit.playersInside.length > 0) {
+    const thereArePlayers = this.pit.playersInside.length > 0;
+    if (thereArePlayers) {
       this.walkingBackStarted = false;
-      this.state = this.active;
+      this.behavior = this.active;
       return;
     }
 
-    if (this.position.isAtStart() && this.health.isFull()) {
+    const monsterIsReset = this.position.isAtStart() && this.health.isFull();
+    if (monsterIsReset) {
       this.firstShot = true;
       this.direction.turnToStart();
       return;
@@ -86,8 +86,9 @@ class AMonster0 {
   }
 
   active() {
-    if (this.pit.playersInside.length == 0) {
-      this.state = this.walkingBack;
+    const thereAreNoPlayers = this.pit.playersInside.length == 0;
+    if (thereAreNoPlayers) {
+      this.behavior = this.walkingBack;
       return;
     }
 
@@ -100,7 +101,7 @@ class AMonster0 {
 
     if (canShoot && inDistance) {
       this.firstShot = false;
-      this.state = this.shooting;
+      this.behavior = this.shooting;
       return;
     }
 
@@ -135,16 +136,17 @@ class AMonster0 {
       this.shootingStarted = true;
     }
 
-    if (this.pit.playersInside.length == 0) {
+    const thereAreNoPlayers = this.pit.playersInside.length == 0;
+    if (thereAreNoPlayers) {
       this.path.movespeed = 80;
-      this.state = this.walkingBack;
+      this.behavior = this.walkingBack;
       this.shootingStarted = false;
       return;
     }
 
     if (this.lastShot.timeSince() > 0.5) {
       this.path.movespeed = 80;
-      this.state = this.active;
+      this.behavior = this.active;
       this.shootingStarted = false;
       this.bulletShot = false;
       return;
@@ -155,6 +157,7 @@ class AMonster0 {
       this.position.y,
     ])[0].player;
 
+    
     if (this.lastShot.timeSince() > 0.1 && !this.bulletShot) {
       this.bulletShot = true;
       this.bullet = new AMonsterBullet(

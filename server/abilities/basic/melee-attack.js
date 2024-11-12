@@ -1,4 +1,5 @@
-const { Target } = require("../../entity-components/components.js");
+import Target from "../../entity-components/target";
+
 const MeleeAttackEntity = require("./melee-attack-entity.js");
 class MeleeAttack {
   constructor(engine, caster) {

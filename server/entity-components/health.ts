@@ -1,5 +1,14 @@
+import Engine from "../engine/engine";
+
 class Health {
-  constructor(engine, maxHealth, regen) {
+  engine: Engine;
+  current: number;
+  max: number;
+  originalMax: number;
+  regen: number;
+  multipliers: { [key: string]: number };
+
+  constructor(engine: Engine, maxHealth: number, regen: number) {
     this.engine = engine;
 
     this.current = maxHealth;
@@ -22,7 +31,7 @@ class Health {
     this.multipliers = {};
   }
 
-  takeDamage(amount) {
+  takeDamage(amount: number) {
     this.current -= amount;
     if (this.current >= 0) return 0;
     const remain = -this.current;
@@ -38,13 +47,13 @@ class Health {
     return this.current === this.max;
   }
 
-  addMultiplier(multiplier, id) {
+  addMultiplier(multiplier: number, id: string) {
     this.current *= multiplier;
     this.max *= multiplier;
     this.multipliers[id] = multiplier;
   }
 
-  removeMultiplier(id) {
+  removeMultiplier(id: string) {
     if (this.multipliers[id]) {
       this.current /= this.multipliers[id];
       this.max /= this.multipliers[id];
@@ -53,4 +62,4 @@ class Health {
   }
 }
 
-module.exports = { Health };
+export default Health;

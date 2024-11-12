@@ -1,5 +1,22 @@
+import Engine from "../engine/engine";
+import { PathFinder } from "../map/pathfinder";
+import Position from "./position";
+
 class Path {
-  constructor(engine, position, movespeed, pathRegion) {
+  engine: Engine;
+  position: Position;
+  movespeed: number;
+  pathRegion: PathFinder;
+  pathX: number[];
+  pathY: number[];
+  isMoving: boolean;
+
+  constructor(
+    engine: Engine,
+    position: Position,
+    movespeed: number,
+    pathRegion: PathFinder
+  ) {
     this.engine = engine;
 
     this.position = position;
@@ -10,7 +27,7 @@ class Path {
     this.isMoving = false;
   }
 
-  setPath(desiredX, desiredY) {
+  setPath(desiredX: number, desiredY: number) {
     const path = this.pathRegion.getPath(
       [this.position.x, this.position.y],
       [desiredX, desiredY]
@@ -32,8 +49,8 @@ class Path {
 
         //if the desired position can be reached in one move
         if (mag <= availableDistance) {
-          this.position.x = this.pathX.shift();
-          this.position.y = this.pathY.shift();
+          this.position.x = this.pathX.shift() || 0; // the zero case shouldn't happen
+          this.position.y = this.pathY.shift() || 0;
           availableDistance -= mag;
         } else {
           this.position.x += moveDistanceX;
@@ -53,4 +70,4 @@ class Path {
   }
 }
 
-module.exports = { Path };
+export default Path;

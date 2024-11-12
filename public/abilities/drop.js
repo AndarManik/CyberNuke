@@ -2,7 +2,6 @@ import { staticEntities } from "../elements.js";
 
 class Drop {
   constructor(state) {
-    //CALM: this shouldn't use the player data
     console.log("Drop built");
     this.element = document.createElement("div");
     const style = this.element.style;

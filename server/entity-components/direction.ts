@@ -1,5 +1,13 @@
+import Engine from "../engine/engine";
+
 class Direction {
-  constructor(engine, speed, direction) {
+  engine: Engine;
+  speed: number;
+  current: number;
+  desire: number;
+  start: number;
+  
+  constructor(engine: Engine, speed: number, direction: number) {
     this.engine = engine;
 
     this.speed = speed || 0;
@@ -30,15 +38,15 @@ class Direction {
     this.desire = this.start;
   }
 
-  turnTo(startX, startY, endX, endY) {
+  turnTo(startX: number, startY: number, endX: number, endY: number) {
     this.desire = Math.atan2(endX - startX, -1 * (endY - startY));
   }
 
-  setTo(startX, startY, endX, endY) {
+  setTo(startX: number, startY: number, endX: number, endY: number) {
     this.current = Math.atan2(endX - startX, -1 * (endY - startY));
   }
 
-  translate(point, distance) {
+  translate(point: [number, number], distance: number) {
     return [
       point[0] + Math.sin(this.current) * distance,
       point[1] - Math.cos(this.current) * distance,
@@ -46,4 +54,4 @@ class Direction {
   }
 }
 
-module.exports = { Direction };
+export default Direction;

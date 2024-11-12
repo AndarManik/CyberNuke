@@ -1,13 +1,12 @@
 const DamageIndicatorEntity = require("../../damage-indicator.js");
-const {
-  Direction,
-  Position,
-  Path,
-  Radius,
-  Target,
-  Health
-} = require("../../entity-components/components.js");
 const pointUtils = require("../../point-utils.js");
+
+import Direction from "../../entity-components/direction";
+import Health from "../../entity-components/health";
+import Path from "../../entity-components/path";
+import Position from "../../entity-components/position";
+import Radius from "../../entity-components/radius";
+import Target from "../../entity-components/target";
 
 class AMonster1 {
   constructor(engine, pit, entityX, entityY, pathId) {

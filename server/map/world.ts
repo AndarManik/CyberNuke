@@ -1,16 +1,19 @@
 const pointUtils = require("../point-utils.js");
-const buildMap = require("./map-builder.js");
+import buildMap from "./map-builder.js";
+import Engine from "../engine/engine";
 
+// HECTIC: resolve all the any's in this
 class World {
-  constructor(engine) {
+  pits: any[];
+  constructor(engine: Engine) {
     this.pits = [];
     buildMap(engine, this);
   }
 
-  getPath(startPoint, endPoint) {
-    const intersectionPoints = [];
-    let startPit = null;
-    let endPit = null;
+  getPath(startPoint: [number, number], endPoint: [number, number]) {
+    const intersectionPoints: any[] = [];
+    let startPit: any = null;
+    let endPit: any = null;
 
     for (let index = 0; index < this.pits.length; index++) {
       const currentPit = this.pits[index];
@@ -53,8 +56,8 @@ class World {
 
     intersectionPoints.sort((a, b) => a[0][2] - b[0][2]);
 
-    const pathX = [];
-    const pathY = [];
+    const pathX: number[] = [];
+    const pathY: number[] = [];
 
     if (startPit) {
       const path = startPit[1].getPath(startPoint, startPit[0][1]);
@@ -88,7 +91,7 @@ class World {
     return { x: pathX, y: pathY };
   }
 
-  checkPitOnPoint(point, radius) {
+  checkPitOnPoint(point: [number, number], radius: number) {
     for (let index = 0; index < this.pits.length; index++)
       if (this.pits[index].isCircleInPit(point, radius))
         return this.pits[index];
@@ -96,8 +99,8 @@ class World {
   }
 
   //HECTIC: this should be optimized with a quad-tree/grid index to get pits to render
-  getRenderedPits(point) {
-    const relevantPits = [];
+  getRenderedPits(point: [number, number]) {
+    const relevantPits: any = [];
     for (let index = 0; index < this.pits.length; index++) {
       const distance = pointUtils.distance(point, [
         this.pits[index].entityX,
@@ -111,4 +114,4 @@ class World {
   }
 }
 
-module.exports = World;
+export default World;

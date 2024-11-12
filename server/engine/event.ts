@@ -1,5 +1,10 @@
+import TickManager from "./tick";
+
 class Event {
-  constructor(tickManager) {
+  tickManager: TickManager;
+  tick: number;
+  
+  constructor(tickManager: TickManager) {
     this.tickManager = tickManager;
     this.update();
   }
@@ -13,4 +18,4 @@ class Event {
   }
 }
 
-module.exports = Event;
+export default Event;

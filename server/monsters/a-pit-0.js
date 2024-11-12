@@ -57,7 +57,7 @@ function isLineInTerrain(start, end, entityX, entityY) {
 }
 
 class A0MonsterPitEntity {
-  constructor(engine, entityX, entityY) {
+  constructor(engine, entityX, entityY, color) {
     this.engine = engine;
     this.entity = this.engine.newEntity(this, "dynamic");
     this.entityX = entityX;
@@ -74,6 +74,7 @@ class A0MonsterPitEntity {
     if(random > 0.80)
       this.color = engine.colors.purple;
     
+    this.color = color
     this.lastStateReadTick = 0;
     this.stateRead = [];
     this.playersInside = [];

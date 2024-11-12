@@ -1,5 +1,9 @@
 class Position {
-  constructor(startX, startY) {
+  startX: number;
+  startY: number;
+  x: number;
+  y: number;
+  constructor(startX: number, startY: number) {
     this.startX = startX;
     this.startY = startY;
     this.x = startX;
@@ -20,4 +24,4 @@ class Position {
   }
 }
 
-module.exports = { Position };
+export default Position;

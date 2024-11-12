@@ -1,5 +1,4 @@
-const { Target } = require("../../entity-components/components.js");
-
+import Target from "../../entity-components/target";
 const RangeAttackEntity = require("./range-attack-entity.js");
 
 class RangeAttack {

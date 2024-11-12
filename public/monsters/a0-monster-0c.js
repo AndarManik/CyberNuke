@@ -7,7 +7,7 @@ class A0Monster0Entity {
     this.element.style.position = "absolute";
     this.element.style.width = 20;
     this.element.style.height = 20;
-    this.element.style.left = `340px`; // 350 - 20
+    this.element.style.left = `340px`; // 350 - 20 / 2
     this.element.style.top = "340px";
 
     this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

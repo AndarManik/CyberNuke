@@ -1,4 +1,5 @@
 // HECTIC: make a total damage which shows along side the regular damage this should stay still above the receiver
+// MAYHEM: make the damage transaction system / object. It should track information of relevant damage history per damagable entity.
 class DamageIndicatorEntity {
   constructor(engine, damageDealt, caster, receiver) {
     this.engine = engine;

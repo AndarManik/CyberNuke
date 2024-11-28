@@ -1,4 +1,4 @@
-const AMonsterBullet = require("./monster0_bullet.js");
+import AMonsterBullet from "./monster0_bullet";
 
 import Direction from "../../entity-components/direction";
 import Health from "../../entity-components/health";
@@ -6,13 +6,47 @@ import Path from "../../entity-components/path";
 import Position from "../../entity-components/position";
 import Radius from "../../entity-components/radius";
 import Target from "../../entity-components/target";
+import Engine from "../../engine/engine";
+import Pit from "../../map/pit";
+import { Targetable } from "../../engine/entity";
+import { ColorSuite } from "../../engine/values";
+import Event from "../../engine/event";
 
-class AMonster0 {
-  constructor(engine, pit, entityX, entityY, pathId) {
+class AMonster0 implements Targetable {
+  id: string;
+  engine: Engine;
+  pit: Pit;
+  color: ColorSuite;
+
+  pathDevX: number;
+  pathDevY: number;
+
+  health: Health;
+  position: Position;
+  radius: Radius;
+  path: Path;
+  direction: Direction;
+  target: Target;
+
+  bullet: AMonsterBullet | null;
+  lastShot: Event;
+  bulletShot: boolean;
+  firstShot: boolean;
+  alive: boolean;
+  walkingBackStarted: boolean;
+  shootingStarted: boolean;
+  behavior: () => void;
+
+  constructor(
+    engine: Engine,
+    pit: Pit,
+    entityX: number,
+    entityY: number,
+    pathId: number
+  ) {
     this.engine = engine;
+    this.engine.registerEntity(this).isTargetable(this);
     this.pit = pit;
-
-    this.entity = this.engine.newEntity(this, "targetable");
 
     this.health = new Health(engine, 300, 100);
     this.position = new Position(entityX, entityY);
@@ -49,7 +83,7 @@ class AMonster0 {
 
   removeIfDead() {
     if (this.health.isZero()) {
-      this.entity.remove();
+      this.engine.removeEntity(this);
       this.alive = false;
     }
   }
@@ -86,13 +120,14 @@ class AMonster0 {
   }
 
   active() {
-    const thereAreNoPlayers = this.pit.playersInside.length == 0;
-    if (thereAreNoPlayers) {
+    const nearestPlayerData = this.target.nearest();
+
+    const thereAreNoPlayers = nearestPlayerData === null;
+    if(thereAreNoPlayers) {
       this.behavior = this.walkingBack;
       return;
     }
 
-    const nearestPlayerData = this.target.nearest();
     const nearestPlayer = nearestPlayerData.entity;
     const playerDistance = nearestPlayerData.distance;
 
@@ -110,7 +145,7 @@ class AMonster0 {
     const xDif = this.position.x - nearestPlayer.position.x;
     const yDif = this.position.y - nearestPlayer.position.y;
     const distance = Math.sqrt(xDif * xDif + yDif * yDif);
-    const preDestination = [
+    const preDestination: [number, number] = [
       (engageDistance * xDif) / distance +
         nearestPlayer.position.x +
         this.pathDevX,
@@ -157,7 +192,6 @@ class AMonster0 {
       this.position.y,
     ])[0].player;
 
-    
     if (this.lastShot.timeSince() > 0.1 && !this.bulletShot) {
       this.bulletShot = true;
       this.bullet = new AMonsterBullet(
@@ -179,7 +213,7 @@ class AMonster0 {
   }
 
   getState() {
-    const state = [];
+    const state: object[] = [];
     state.push({
       type: "a0monster0",
       entityX: this.position.x,
@@ -196,9 +230,9 @@ class AMonster0 {
     return state;
   }
 
-  takeDamage(amount) {
+  takeDamage(amount: number) {
     this.health.takeDamage(amount);
   }
 }
 
-module.exports = AMonster0;
+export default AMonster0;

@@ -7,12 +7,12 @@ class Direction {
   desire: number;
   start: number;
   
-  constructor(engine: Engine, speed: number, direction: number) {
+  constructor(engine: Engine, speed: number = 0, direction: number = 0) {
     this.engine = engine;
 
-    this.speed = speed || 0;
-    this.current = direction || 0;
-    this.desire = direction || 0;
+    this.speed = speed;
+    this.current = direction;
+    this.desire = direction;
     this.start = this.current;
   }
 
@@ -46,7 +46,7 @@ class Direction {
     this.current = Math.atan2(endX - startX, -1 * (endY - startY));
   }
 
-  translate(point: [number, number], distance: number) {
+  translate(point: [number, number], distance: number): [number, number] {
     return [
       point[0] + Math.sin(this.current) * distance,
       point[1] - Math.cos(this.current) * distance,

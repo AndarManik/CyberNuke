@@ -1,18 +1,49 @@
-const DamageIndicatorEntity = require("../../damage-indicator.js");
-const pointUtils = require("../../point-utils.js");
+import DamageIndicatorEntity from "../../damage-indicator";
+import pointUtils from "../../point-utils";
 
+import Engine from "../../engine/engine";
+import { Targetable } from "../../engine/entity";
+import Event from "../../engine/event";
+import { ColorSuite } from "../../engine/values";
 import Direction from "../../entity-components/direction";
 import Health from "../../entity-components/health";
 import Path from "../../entity-components/path";
 import Position from "../../entity-components/position";
 import Radius from "../../entity-components/radius";
 import Target from "../../entity-components/target";
+import Pit from "../../map/pit";
 
-class AMonster1 {
-  constructor(engine, pit, entityX, entityY, pathId) {
+class AMonster1 implements Targetable{
+  id: string;
+  engine: Engine;
+  pit: Pit;
+  range: number;
+  health: Health;
+  position: Position;
+  radius: Radius;
+  path: Path;
+  direction: Direction;
+  target: Target;
+  pathId: number;
+  pathDevX: number;
+  pathDevY: number;
+  color: ColorSuite;
+  damage: number;
+  dashSpeed: number;
+  behavior: () => void;
+  walkingBackStarted: boolean;
+  lastDash: Event;
+  firstDash: boolean;
+  alive: boolean;
+  dashingStarted: boolean;
+  playersHit: Map<string, Targetable> = new Map();
+  distanceDashed: number;
+
+
+  constructor(engine: Engine, pit: Pit, entityX: number, entityY: number, pathId: number) {
     this.engine = engine;
 
-    this.entity = this.engine.newEntity(this, "targetable");
+    this.engine.registerEntity(this).isTargetable(this);
 
     this.range = 250;
 
@@ -37,7 +68,7 @@ class AMonster1 {
     this.damage = 50;
     this.dashSpeed = 400;
 
-    this.state = this.walkingBack;
+    this.behavior = this.walkingBack;
     this.walkingBackStarted = false;
     this.lastDash = this.engine.newEvent();
     this.firstDash = true;
@@ -47,10 +78,10 @@ class AMonster1 {
   update() {
     //HECTIC: this behavior needs to include a vision check. Perhaps wait until the new pathing engine is done
     if (this.health.isZero()) {
-      this.entity.remove();
+      this.engine.removeEntity(this);
       this.alive = false;
     }
-    this.state();
+    this.behavior();
 
     this.path.isMoving = true;
     this.path.update();
@@ -62,7 +93,7 @@ class AMonster1 {
   walkingBack() {
     if (this.pit.playersInside.length > 0) {
       this.walkingBackStarted = false;
-      this.state = this.active;
+      this.behavior = this.active;
       return;
     }
 
@@ -90,12 +121,12 @@ class AMonster1 {
   }
 
   active() {
-    if (this.pit.playersInside.length == 0) {
-      this.state = this.walkingBack;
+    const nearestPlayerData = this.target.nearest();
+    const thereAreNoPlayers = nearestPlayerData === null;
+    if(thereAreNoPlayers) {
+      this.behavior = this.walkingBack;
       return;
     }
-
-    const nearestPlayerData = this.target.nearest();
     const nearestPlayer = nearestPlayerData.entity;
     const playerDistance = nearestPlayerData.distance;
 
@@ -111,7 +142,7 @@ class AMonster1 {
       )
     ) {
       this.firstDash = false;
-      this.state = this.dashing;
+      this.behavior = this.dashing;
       return;
     }
 
@@ -120,7 +151,7 @@ class AMonster1 {
     const xDif = this.position.x - nearestPlayer.position.x;
     const yDif = this.position.y - nearestPlayer.position.y;
     const distance = Math.sqrt(xDif * xDif + yDif * yDif);
-    const preDestination = [
+    const preDestination: [number, number] = [
       (engageDistance * xDif) / distance +
         nearestPlayer.position.x +
         this.pathDevX,
@@ -144,13 +175,13 @@ class AMonster1 {
     if (!this.dashingStarted) {
       this.lastDash.update();
       this.path.reset();
-      this.playersHit = {};
+      this.playersHit = new Map();
       this.distanceDashed = 0;
       this.dashingStarted = true;
     }
 
     if (this.pit.playersInside.length == 0) {
-      this.state = this.walkingBack;
+      this.behavior = this.walkingBack;
       this.dashingStarted = false;
       return;
     }
@@ -184,7 +215,7 @@ class AMonster1 {
     this.distanceDashed += distance;
 
     if (this.pit.playersInside.length == 0) {
-      this.state = this.walkingBack;
+      this.behavior = this.walkingBack;
       this.dashingStarted = false;
     }
 
@@ -204,7 +235,7 @@ class AMonster1 {
     });
 
     if (this.distanceDashed >= 120) {
-      this.state = this.active;
+      this.behavior = this.active;
       this.dashingStarted = false;
     }
   }
@@ -226,9 +257,9 @@ class AMonster1 {
     ];
   }
 
-  takeDamage(amount) {
+  takeDamage(amount: number) {
     this.health.takeDamage(amount);
   }
 }
 
-module.exports = AMonster1;
+export default AMonster1;

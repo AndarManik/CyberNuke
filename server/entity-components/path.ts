@@ -10,6 +10,7 @@ class Path {
   pathX: number[];
   pathY: number[];
   isMoving: boolean;
+  perpetual: boolean = false;
 
   constructor(
     engine: Engine,
@@ -37,7 +38,7 @@ class Path {
   }
 
   update() {
-    if (this.isMoving) {
+    if (this.isMoving || this.perpetual) {
       let availableDistance = this.movespeed * this.engine.getDelta();
 
       while (availableDistance > 0 && this.pathX.length > 0) {

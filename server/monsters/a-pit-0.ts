@@ -1,27 +1,35 @@
-const pointUtils = require("../point-utils.js");
-const { PitRectangleEntity } = require("./pit-rectangle.js");
-const { v4: uuidv4 } = require("uuid");
-const AMonster0 = require("./a/monster0_.js");
-const AMonster1 = require("./a/monster1_.js");
+import pointUtils from "../point-utils";
+import PitRectangleEntity from "./pit-rectangle";
+import AMonster0 from "./a/monster0_";
+import AMonster1 from "./a/monster1_";
+import Monster from "./monster";
+import Pit from "../map/pit";
+import Engine from "../engine/engine";
+import { ColorSuite } from "../engine/values";
+import Player from "../player/serverplayer";
+import AMonster2 from "./a/monster2_";
 const MeleeAttackDrop = require("../abilities/basic/melee-attack-drop.js");
 
-const color = 210;
-
-const terrainEntities = [];
+const terrainEntities: PitRectangleEntity[] = [];
 const thin = Math.sqrt(0.5) * 25;
-terrainEntities.push(new PitRectangleEntity(37.5, -50, 50, thin, color, 30));
-terrainEntities.push(new PitRectangleEntity(37.5, 50, 50, thin, color, 150));
-terrainEntities.push(new PitRectangleEntity(-37.5, -50, 50, thin, color, 150));
-terrainEntities.push(new PitRectangleEntity(-37.5, 50, 50, thin, color, 30));
-terrainEntities.push(new PitRectangleEntity(75, 0, thin, thin, color, 45));
-terrainEntities.push(new PitRectangleEntity(-75, 0, thin, thin, color, 45));
+terrainEntities.push(new PitRectangleEntity(37.5, -50, 50, thin, 30));
+terrainEntities.push(new PitRectangleEntity(37.5, 50, 50, thin, 150));
+terrainEntities.push(new PitRectangleEntity(-37.5, -50, 50, thin, 150));
+terrainEntities.push(new PitRectangleEntity(-37.5, 50, 50, thin, 30));
+terrainEntities.push(new PitRectangleEntity(75, 0, thin, thin, 45));
+terrainEntities.push(new PitRectangleEntity(-75, 0, thin, thin, 45));
 
 const terrainPolygons = terrainEntities.map((ter) => ter.getGraph());
 const pathData = pointUtils.buildPathingGraphFromPolygons(terrainPolygons);
 const pathNodes = pathData[0];
 const pathEdges = pathData[1];
 
-function getPath(startPoint, endPoint, entityX, entityY) {
+function getPath(
+  startPoint: [number, number],
+  endPoint: [number, number],
+  entityX: number,
+  entityY: number
+) {
   const translatedStartPoint = [
     startPoint[0] - entityX,
     startPoint[1] - entityY,
@@ -39,8 +47,15 @@ function getPath(startPoint, endPoint, entityX, entityY) {
   return path;
 }
 
-function kickOutTerrain(point, entityX, entityY) {
-  const translatedPoint = [point[0] - entityX, point[1] - entityY];
+function kickOutTerrain(
+  point: [number, number],
+  entityX: number,
+  entityY: number
+): [number, number] {
+  const translatedPoint: [number, number] = [
+    point[0] - entityX,
+    point[1] - entityY,
+  ];
   const kickedPoint = pointUtils.kickPointOutOfPolygons(
     translatedPoint,
     terrainPolygons
@@ -48,7 +63,12 @@ function kickOutTerrain(point, entityX, entityY) {
   return [kickedPoint[0] + entityX, kickedPoint[1] + entityY];
 }
 
-function isLineInTerrain(start, end, entityX, entityY) {
+function isLineInTerrain(
+  start: [number, number],
+  end: [number, number],
+  entityX: number,
+  entityY: number
+) {
   return pointUtils.isSegmentInPolygons(
     [start[0] - entityX, start[1] - entityY],
     [end[0] - entityX, end[1] - entityY],
@@ -56,58 +76,64 @@ function isLineInTerrain(start, end, entityX, entityY) {
   );
 }
 
-class A0MonsterPitEntity {
-  constructor(engine, entityX, entityY, color) {
+class A0MonsterPitEntity implements Pit {
+  id: string;
+  engine: Engine;
+  entityX: number;
+  entityY: number;
+  radius: number;
+  color: ColorSuite;
+  lastStateReadTick: number;
+  stateRead: object[];
+  playersInside: Player[];
+  terrain: object[];
+  monsters: Monster[];
+  maxHealth: number;
+  health: number;
+  isAlive: boolean;
+  itemsDropped: boolean;
+  state: object;
+
+  constructor(
+    engine: Engine,
+    entityX: number,
+    entityY: number,
+    color: ColorSuite
+  ) {
     this.engine = engine;
-    this.entity = this.engine.newEntity(this, "dynamic");
+    this.engine.registerEntity(this).isDynamic(this);
     this.entityX = entityX;
     this.entityY = entityY;
     this.radius = 125;
-    const random = Math.random();
-    this.color = engine.colors.blue;
-    if(random > 0.20)
-      this.color = engine.colors.green;
-    if(random > 0.40)
-      this.color = engine.colors.yellow;
-    if(random > 0.60)
-      this.color = engine.colors.red;
-    if(random > 0.80)
-      this.color = engine.colors.purple;
-    
-    this.color = color
+
+    this.color = color;
     this.lastStateReadTick = 0;
     this.stateRead = [];
     this.playersInside = [];
 
-    this.terrain = terrainEntities.map((terrain) => {
-      const state = terrain.getState(entityX, entityY);
-      state.color = this.color.terrain;
-      return state;
-    });
+    this.terrain = terrainEntities.map((terrain) =>
+      terrain.getState(entityX, entityY, this.color.terrain)
+    );
 
-    this.entities = [];
-    this.entities.push(
+    this.monsters = [];
+    this.monsters.push(
       new AMonster1(engine, this, this.entityX, this.entityY, 1)
     );
-    this.entities.push(
+    this.monsters.push(
       new AMonster1(engine, this, this.entityX + 25, this.entityY + 25, 2)
     );
-    this.entities.push(
+    this.monsters.push(
       new AMonster0(engine, this, this.entityX - 25, this.entityY + 25, 3)
     );
 
-    this.entities.push(
+    this.monsters.push(
       new AMonster0(engine, this, this.entityX + 25, this.entityY - 25, 4)
     );
-    this.entities.push(
-      new AMonster1(engine, this, this.entityX - 25, this.entityY - 25, 5)
+    this.monsters.push(
+      new AMonster2(engine, this, this.entityX - 25, this.entityY - 25, 5)
     );
 
-    this.entities.push(
-      new AMonster0(engine, this, this.entityX - 25, this.entityY - 25, 6)
-    );
-
-    this.maxHealth = this.entities.reduce(
+    this.maxHealth = this.monsters.reduce(
       (sum, entity) => sum + entity.health.max,
       0
     );
@@ -131,9 +157,9 @@ class A0MonsterPitEntity {
   //MAYHEM: add dropping the items after the pit is finished.
 
   update() {
-    this.entities.forEach((entity) => entity.update());
+    this.monsters.forEach((entity) => entity.update());
     this.removeDead();
-    this.health = this.entities.reduce(
+    this.health = this.monsters.reduce(
       (sum, entity) => sum + entity.health.current,
       0
     );
@@ -153,31 +179,31 @@ class A0MonsterPitEntity {
   }
 
   removeDead() {
-    for (let i = 0; i < this.entities.length; i++) {
-      if (!this.entities[i].alive) {
-        this.entities.splice(i, 1);
+    for (let i = 0; i < this.monsters.length; i++) {
+      if (!this.monsters[i].alive) {
+        this.monsters.splice(i, 1);
         i--; // decrement i to adjust index after splice
       }
     }
   }
 
-  addPlayer(player) {
+  addPlayer(player: Player) {
     this.playersInside.push(player);
   }
 
-  removePlayer(player) {
+  removePlayer(player: Player) {
     this.playersInside.splice(this.playersInside.indexOf(player), 1);
   }
 
-  getPath(startPoint, endPoint) {
+  getPath(startPoint: [number, number], endPoint: [number, number]) {
     return getPath(startPoint, endPoint, this.entityX, this.entityY);
   }
 
-  kickOutTerrain(point) {
+  kickOutTerrain(point: [number, number]) {
     return kickOutTerrain(point, this.entityX, this.entityY);
   }
 
-  isLineInTerrain(start, end) {
+  isLineInTerrain(start: [number, number], end: [number, number]) {
     return isLineInTerrain(start, end, this.entityX, this.entityY);
   }
 
@@ -192,7 +218,7 @@ class A0MonsterPitEntity {
     if (this.lastStateReadTick != this.engine.tickManager.tick) {
       this.lastStateReadTick = this.engine.tickManager.tick;
       this.stateRead = [this.getState(), ...this.terrain];
-      this.entities.forEach((entity) => {
+      this.monsters.forEach((entity) => {
         this.stateRead.push(...entity.getState());
       });
     }
@@ -200,7 +226,7 @@ class A0MonsterPitEntity {
     return this.stateRead;
   }
 
-  isSegmentInPit(startPoint, endPoint) {
+  isSegmentInPit(startPoint: [number, number], endPoint: [number, number]) {
     return pointUtils.isSegmentIntersectingCircle(
       startPoint,
       endPoint,
@@ -209,7 +235,10 @@ class A0MonsterPitEntity {
     );
   }
 
-  getIntersectionSegment(startPoint, endPoint) {
+  getIntersectionSegment(
+    startPoint: [number, number],
+    endPoint: [number, number]
+  ) {
     return pointUtils.getIntersectionSegmentCircle(
       startPoint,
       endPoint,
@@ -218,7 +247,7 @@ class A0MonsterPitEntity {
     );
   }
 
-  isPointInPit(point) {
+  isPointInPit(point: [number, number]) {
     return pointUtils.isPointInCircle(
       point,
       [this.entityX, this.entityY],
@@ -226,12 +255,12 @@ class A0MonsterPitEntity {
     );
   }
 
-  isCircleInPit(point, radius) {
+  isCircleInPit(point: [number, number], radius: number) {
     const distance = pointUtils.distance(point, [this.entityX, this.entityY]);
     return distance < this.radius + radius;
   }
 
-  getDistanceToPlayersInside(point) {
+  getDistanceToPlayersInside(point: [number, number]) {
     return this.playersInside
       .map((player) => {
         return {
@@ -245,7 +274,7 @@ class A0MonsterPitEntity {
       .sort((a, b) => a.distance - b.distance);
   }
 
-  projectPointInto(point) {
+  projectPointInto(point: [number, number]) {
     if (
       pointUtils.isPointInCircle(
         point,

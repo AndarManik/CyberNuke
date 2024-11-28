@@ -1,100 +1,78 @@
-import { Dynamic, Targeted } from "../engine/entity";
+import Event from "../engine/event";
 import Engine from "../engine/engine";
-import Position from "../entity-components/position";
-import Radius from "../entity-components/radius";
+import { PlayerValues } from "../engine/values";
+import { Dynamic, Targetable } from "../engine/entity";
+
 import Path from "../entity-components/path";
+import Radius from "../entity-components/radius";
 import Health from "../entity-components/health";
 import Shield from "../entity-components/shield";
-import Ability from "../abilities/ability";
+import Position from "../entity-components/position";
+
 import Pit from "../map/pit";
-import Event from "../engine/event";
+
+import { NetworkInput, PlayerInput } from "./input";
 import WebSocket from "ws";
 
-const {
-  RangeAttack,
-  MeleeAttack,
-  SelfShield,
-} = require("../abilities/basic.js");
+import Ability from "../abilities/ability";
+import RangeAttack from "../abilities/basic/range-attack";
+import MeleeAttack from "../abilities/basic/melee-attack";
+import SelfShield from "../abilities/basic/self_shield";
 
-type Input = {
-  mouseDown: boolean;
-  mouseX: number;
-  mouseY: number;
-  actions: {
-    s: any;
-    q: number;
-    w: number;
-    e: number;
-  };
-  actionsUse: {
-    q: any;
-    w: any;
-    e: any;
-  };
-};
-
-class Player implements Targeted, Dynamic {
+class Player implements Targetable, Dynamic {
   id: string;
   engine: Engine;
   ws: WebSocket;
+
   position: Position;
   radius: Radius;
   path: Path;
   health: Health;
   shield: Shield;
-  mouseX: number;
-  mouseY: number;
-  prevMouseDown: boolean;
-  mouseDown: boolean;
-  actions: {
-    q: number;
-    w: number;
-    e: number;
-    s: number;
-  };
-  actionsUse: {
-    q: number;
-    w: number;
-    e: number;
-    s: number;
-  };
+
+  playerInput: PlayerInput;
   abilities: {
     q: Ability;
     w: Ability;
     e: Ability;
   };
+
   currentPit: Pit | null;
   renderedPits: Pit[];
   playerHit: Event;
+  values: PlayerValues;
 
   constructor(engine: Engine, ws: WebSocket) {
     this.engine = engine;
-    this.engine.registerEntity(this);
-    this.engine.registerPlayer(this);
-    this.engine.registerDynamic(this);
-    this.engine.registerTargeted(this);
+    this.engine
+      .registerEntity(this)
+      .isPlayer(this)
+      .isDynamic(this)
+      .isTargetable(this);
+
+    this.values = engine.values.player;
 
     this.ws = ws;
 
-    this.position = new Position(100, 100);
-    this.radius = new Radius(10);
-    this.path = new Path(this.engine, this.position, 100, this.engine.map);
-    this.health = new Health(this.engine, 1000, 0.01);
+    this.position = new Position(100, 100); //CALM: make the parameters for this construtor arguments
+    this.radius = new Radius(this.values.radius);
+    this.path = new Path(
+      this.engine,
+      this.position,
+      this.values.movespeed,
+      this.engine.map
+    );
+    this.health = new Health(this.engine, this.values.health, 0);
     this.shield = new Shield();
     // CALM: put these in a CLASS or interface or something mainly class
-    this.mouseX = 0;
-    this.mouseY = 0;
-    this.prevMouseDown = false;
-    this.mouseDown = false;
 
-    this.actions = { q: 0, w: 0, e: 0, s: 0 };
-    this.actionsUse = { q: 0, w: 0, e: 0, s: 0 };
+    this.playerInput = new PlayerInput();
 
     this.abilities = {
       q: new RangeAttack(engine, this),
       w: new MeleeAttack(engine, this),
       e: new SelfShield(engine, this),
-    }; //contains upto 3 abilities at members q,w,e
+    };
 
     this.currentPit = null;
     this.renderedPits = [];
@@ -102,24 +80,14 @@ class Player implements Targeted, Dynamic {
     this.playerHit = this.engine.newEvent();
   }
 
-  setInput(input: Input) {
-    this.prevMouseDown = this.mouseDown;
-    this.mouseDown = input.mouseDown;
-    this.mouseX = input.mouseX;
-    this.mouseY = input.mouseY;
+  setInput(networkInput: NetworkInput) {
+    this.playerInput.updateState(networkInput);
 
-    this.actions = input.actions;
-    this.actionsUse.q = input.actionsUse.q ? 1 : this.actionsUse.q;
-    this.actionsUse.w = input.actionsUse.w ? 1 : this.actionsUse.w;
-    this.actionsUse.e = input.actionsUse.e ? 1 : this.actionsUse.e;
+    if (!this.playerInput.prevMouseDown && this.playerInput.mouseDown)
+      this.path.isMoving = true;
 
-    if (this.prevMouseDown && this.mouseDown) this.path.isMoving = true;
-
-    if (input.actions.s) {
+    if (this.playerInput.s) {
       this.path.isMoving = false;
-      this.actionsUse.q = 0;
-      this.actionsUse.w = 0;
-      this.actionsUse.e = 0;
     }
   }
 
@@ -141,35 +109,27 @@ class Player implements Targeted, Dynamic {
     if (this.health.current <= 0) this.reset();
 
     this.health.regen =
-      this.health.max * (this.playerHit.timeSince() > 10 ? 0.1 : 0.01);
+      this.health.max *
+      (this.playerHit.timeSince() > 10
+        ? this.values.outOfCombatRegen
+        : this.values.baseRegen);
 
-    this.health.update();
-
-    if (this.path.isMoving && this.mouseDown)
+    if (this.path.isMoving && this.playerInput.mouseDown)
       this.path.setPath(
-        this.position.x + this.mouseX,
-        this.position.y + this.mouseY
+        this.position.x + this.playerInput.mouseX,
+        this.position.y + this.playerInput.mouseY
       );
 
-    this.path.update();
-
-    //ability update
-    ["q", "w", "e"].forEach((key) => {
-      if (this.actionsUse[key] && !this.actions.s) {
-        this.abilities[key].use();
-        this.actionsUse[key] = 0;
-      }
-    });
-
-    ["q", "w", "e"].forEach((key) => {
-      this.abilities[key].update();
-    });
+    if (this.playerInput.isQUsed()) this.abilities.q.use();
+    if (this.playerInput.isWUsed()) this.abilities.w.use();
+    if (this.playerInput.isEUsed()) this.abilities.e.use();
 
     // update current pit
     const pitCheck = this.engine.map.checkPitOnPoint(
       [this.position.x, this.position.y],
       this.radius.current
     );
+
     if (this.currentPit !== pitCheck) {
       if (this.currentPit) {
         this.currentPit.removePlayer(this);
@@ -184,6 +144,12 @@ class Player implements Targeted, Dynamic {
       this.position.x,
       this.position.y,
     ]);
+
+    this.health.update();
+    this.path.update();
+    this.abilities.q.update();
+    this.abilities.w.update();
+    this.abilities.e.update();
   }
 
   sendPlayerTick(players: object[], globalData: object[]) {
@@ -216,16 +182,17 @@ class Player implements Targeted, Dynamic {
   }
 
   delete() {
-    this.engine.removeGroups(this).registerPlayerGraveyard(this);
+    this.engine.clearGroups(this).isPlayerGraveyard(this);
     if (this.currentPit) this.currentPit.removePlayer(this);
   }
 
   rejoin(ws: WebSocket) {
     this.ws = ws;
-    this.engine.removeGroups(this);
-    this.engine.registerPlayer(this);
-    this.engine.registerDynamic(this);
-    this.engine.registerTargeted(this);
+    this.engine
+      .clearGroups(this)
+      .isPlayer(this)
+      .isDynamic(this)
+      .isTargetable(this);
     if (this.currentPit) this.currentPit.addPlayer(this);
   }
 }

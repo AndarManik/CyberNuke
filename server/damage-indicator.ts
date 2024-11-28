@@ -1,9 +1,26 @@
 // HECTIC: make a total damage which shows along side the regular damage this should stay still above the receiver
+
+import Engine from "./engine/engine";
+import { Dynamic } from "./engine/entity";
+import Event from "./engine/event";
+
 // MAYHEM: make the damage transaction system / object. It should track information of relevant damage history per damagable entity.
-class DamageIndicatorEntity {
-  constructor(engine, damageDealt, caster, receiver) {
+class DamageIndicatorEntity implements Dynamic{
+  id: string
+  engine: Engine;
+  damageDealt:number;
+  caster: string;
+  receiver: string;
+  timeToRemove: number;
+  start: Event;
+  velocityX: number;
+  velocityY: number;
+  entityX: number;
+  entityY: number;
+
+  constructor(engine: Engine, damageDealt: number, caster: string, receiver: string) {
     this.engine = engine;
-    this.entity = this.engine.newEntity(this, "dynamic", "global");
+    this.engine.registerEntity(this).isDynamic(this).isGlobal(this);
 
     this.damageDealt = damageDealt;
     this.caster = caster;
@@ -15,13 +32,19 @@ class DamageIndicatorEntity {
       Math.random() < 0.5 ? 30 + Math.random() * 30 : -30 - Math.random() * 30;
     this.velocityY = -120;
 
-    this.entityX = this.engine.targetable.get(this.receiver).position.x;
-    this.entityY = this.engine.targetable.get(this.receiver).position.y;
+    const receiverEntity = this.engine.groups.targetable.get(this.receiver);
+    if(!receiverEntity) {
+      this.remove();
+      return;
+    }
+
+    this.entityX = receiverEntity.position.x;
+    this.entityY = receiverEntity.position.y;
   }
 
   update() {
     if (this.start.timeSince() >= this.timeToRemove) {
-      this.entity.remove();
+      this.remove();
       return;
     }
 
@@ -42,6 +65,10 @@ class DamageIndicatorEntity {
       damageDealt: this.damageDealt,
     };
   }
+
+  remove() {
+    this.engine.removeEntity(this);
+  }
 }
 
-module.exports = DamageIndicatorEntity;
+export default DamageIndicatorEntity;

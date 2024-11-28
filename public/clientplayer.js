@@ -5,12 +5,14 @@ import { BasicShield } from "./abilities/basic-shield.js";
 class Player {
   constructor() {
     //player input
-    this.actions = { q: 0, w: 0, e: 0, s: 0 };
-    this.actionsUse = { q: 0, w: 0, e: 0 };
+    this.q = false;
+    this.w = false;
+    this.e = false;
+    this.s = false;
 
+    this.mouseDown = false;
     this.mouseX = 0;
     this.mouseY = 0;
-    this.mouseDown = false;
 
     //player state
     this.entityX = 0;
@@ -20,9 +22,9 @@ class Player {
     this.shield = 0;
 
     //ability state
-    this.q = new BasicRangeAttack();
-    this.w = new BasicMeleeAttack();
-    this.e = new BasicShield();
+    this.abilityQ = new BasicRangeAttack();
+    this.abilityW = new BasicMeleeAttack();
+    this.abilityE = new BasicShield();
 
     this.initializeEventListeners();
 
@@ -51,52 +53,46 @@ class Player {
     document.addEventListener("keydown", (event) => {
       event.preventDefault();
       if (event.key === "q" || event.key === "Q") {
-        this.actions.q = 1;
-        this.q.activate();
+        this.q = true;
+        this.abilityQ.activate();
       }
       if (event.key === "w" || event.key === "W") {
-        this.actions.w = 1;
-        this.w.activate();
+        this.w = true;
+        this.abilityW.activate();
       }
       if (event.key === "e" || event.key === "E") {
-        this.actions.e = 1;
-        this.e.activate();
+        this.e = true;
+        this.abilityE.activate();
       }
       if (event.key === "s" || event.key === "S") {
-        this.actions.s = 1;
-        this.actions.q = 0;
-        this.actions.w = 0;
-        this.actions.e = 0;
+        this.s = true;
         this.q.deactivate();
         this.w.deactivate();
         this.e.deactivate();
-
       }
     });
 
     document.addEventListener("keyup", (event) => {
       event.preventDefault();
-      if (this.actions.q == 1 && (event.key === "q" || event.key === "Q")) {
-        this.actions.q = 0;
-        this.actionsUse.q = 1;
-        this.q.deactivate();
+      if (event.key === "q" || event.key === "Q") {
+        this.q = false;
+        this.abilityQ.deactivate();
       }
-      if (this.actions.w == 1 && (event.key === "w" || event.key === "W")) {
-        this.actions.w = 0;
-        this.actionsUse.w = 1;
-        this.w.deactivate();
+      if (event.key === "w" || event.key === "W") {
+        this.w = false;
+        this.abilityW.deactivate();
       }
-      if (this.actions.e == 1 && (event.key === "e" || event.key === "E")) {
-        this.actions.e = 0;
-        this.actionsUse.e = 1;
-        this.e.deactivate();
+      if (event.key === "e" || event.key === "E") {
+        this.e = false;
+        this.abilityE.deactivate();
       }
       if (event.key === "s" || event.key === "S") {
-        this.actions.s = 0;
+        this.s = false;
       }
     });
   }
 
+  // HECTIC: Something about this seems wrong I can't tell what but the fact that these elements exist already whereas everything else is constructed doesn't seem correct
   initializeDocumentElements() {
     this.healthElement = document.getElementById("health");
     this.currentHealthHudElement = document.getElementById("currentHealthHud");
@@ -146,39 +142,39 @@ class Player {
 
     //render abilities
     this.abilitiesElement[0].style.background =
-      this.q.cooldown == 1
+      this.abilityQ.cooldown == 1
         ? "hsla(250, 14%, 35%, 0.533)"
         : `conic-gradient(hsla(250, 14%, 35%, 0.533) 0% ${
-            100 * this.q.cooldown
+            100 * this.abilityQ.cooldown
           }%, #ff562200 0% 100%)`;
     this.abilitiesElement[1].style.background =
-      this.w.cooldown == 1
+      this.abilityW.cooldown == 1
         ? "hsla(250, 14%, 35%, 0.533)"
         : `conic-gradient(hsla(250, 14%, 35%, 0.533) 0% ${
-            100 * this.w.cooldown
+            100 * this.abilityW.cooldown
           }%, #ff562200 0% 100%)`;
     this.abilitiesElement[2].style.background =
-      this.e.cooldown == 1
+      this.abilityE.cooldown == 1
         ? "hsla(250, 14%, 35%, 0.533)"
         : `conic-gradient(hsla(250, 14%, 35%, 0.533) 0% ${
-            100 * this.e.cooldown
+            100 * this.abilityE.cooldown
           }%, #ff562200 0% 100%)`;
 
-    this.q.render();
-    this.w.render();
-    this.e.render();
+    this.abilityQ.render();
+    this.abilityW.render();
+    this.abilityE.render();
   }
 
   getInput() {
     const input = {
-      actions: this.actions,
-      actionsUse: this.actionsUse,
+      q: this.q,
+      w: this.w,
+      e: this.e,
+      s: this.s,
       mouseDown: this.mouseDown,
       mouseX: this.mouseX,
       mouseY: this.mouseY,
     };
-
-    this.actionsUse = { q: 0, w: 0, e: 0 };
 
     return input;
   }
@@ -189,9 +185,9 @@ class Player {
     this.maxHealth = state.maxHealth;
     this.health = state.health;
     this.shield = state.shield;
-    this.q.setState(state.q);
-    this.w.setState(state.w);
-    this.e.setState(state.e);
+    this.abilityQ.setState(state.q);
+    this.abilityW.setState(state.w);
+    this.abilityE.setState(state.e);
   }
 }
 

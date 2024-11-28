@@ -1,5 +1,5 @@
-const pointUtils = require("../point-utils.js");
-import buildMap from "./map-builder.js";
+import pointUtils from "../point-utils";
+import buildMap from "./map-builder";
 import Engine from "../engine/engine";
 
 // HECTIC: resolve all the any's in this

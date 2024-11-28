@@ -420,7 +420,7 @@ class PointUtils {
     return false;
   }
 
-  projectPointOntoSegment(point, segmentStart, segmentEnd) {
+  projectPointOntoSegment(point: [number, number], segmentStart: [number, number], segmentEnd: [number, number]): [number, number] {
     const apx = point[0] - segmentStart[0];
     const apy = point[1] - segmentStart[1];
     const abx = segmentEnd[0] - segmentStart[0];
@@ -434,8 +434,8 @@ class PointUtils {
     else return [segmentStart[0] + ratio * abx, segmentStart[1] + ratio * aby];
   }
 
-  kickPointOutofPolygon(point, polygon) {
-    let nearestPoint = [0, 0];
+  kickPointOutofPolygon(point: [number, number], polygon: [number, number][]):[number, number] {
+    let nearestPoint: [number, number] = [0, 0];
     let smallestDistance = Number.MAX_SAFE_INTEGER;
 
     polygon.forEach((edge, index) => {
@@ -469,7 +469,11 @@ class PointUtils {
     return [nearestIndex, smallestDistance];
   }
 
-  getPointRotatedAroundPoint(point, center, angleDeg) {
+  getPointRotatedAroundPoint(
+    point: [number, number],
+    center: [number, number],
+    angleDeg: number
+  ): [number, number] {
     const angleRad = angleDeg * (Math.PI / 180); // Convert angle from degrees to radians
     const x = point[0],
       y = point[1];
@@ -484,7 +488,10 @@ class PointUtils {
     return [xPrime, yPrime];
   }
 
-  kickPointOutOfPolygons(point, polygons) {
+  kickPointOutOfPolygons(
+    point: [number, number],
+    polygons: [number, number][][]
+  ) {
     for (let polygon of polygons)
       if (this.isPointinOpenPolygon(point, polygon))
         return this.kickPointOutofPolygon(point, polygon);
@@ -493,8 +500,7 @@ class PointUtils {
 
   isSegmentInPolygons(start, end, polygons) {
     for (let polygon of polygons)
-      if (this.isSegmentinPolygon(start, end, polygon))
-        return true;
+      if (this.isSegmentinPolygon(start, end, polygon)) return true;
     return false;
   }
 
@@ -674,7 +680,7 @@ class PointUtils {
     return output;
   }
 
-  projectPointOntoCircle(point, center, radius) {
+  projectPointOntoCircle(point: [number, number], center: [number, number], radius:number): [number, number] {
     const relX = point[0] - center[0];
     const relY = point[1] - center[1];
     const scale = radius / Math.sqrt(relX * relX + relY * relY);
@@ -684,4 +690,4 @@ class PointUtils {
 
 const pointUtils = new PointUtils();
 
-module.exports =  pointUtils ;
+export default pointUtils;
